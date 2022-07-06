@@ -1,0 +1,10 @@
+{
+    "apiCodegen": {
+        "src": "./build/openapi.json",
+        "dst": "./build/sulcilab_ts_api"
+    },
+    "devDependencies": {
+        "@nll/api-codegen-ts": "^0.4.10",
+        "rimraf": "^3.0.2"
+    }
+}

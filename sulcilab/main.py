@@ -1,6 +1,9 @@
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from os import makedirs, system
+import os.path as op
+import json
 
 from sulcilab.core import models, crud, schemas
 from sulcilab.database import SessionLocal, engine
@@ -10,6 +13,7 @@ import sulcilab.brainvisa.schemas as bschema
 import sulcilab.brainvisa.models as bmodels
 from sulcilab.auth.auth_bearer import JWTBearer
 from sulcilab.auth.auth_handler import signJWT, get_current_user
+from .utils import BUILD_PATH
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -86,3 +90,17 @@ def read_colors(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 # def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 #     items = crud.get_items(db, skip=skip, limit=limit)
 #     return items
+
+
+
+
+
+@app.on_event("startup")
+def startup():
+    print("Exporting the OpenAPI schema specifications")
+    makedirs(BUILD_PATH, exist_ok=True)
+    with open(op.join(BUILD_PATH, "openapi.json"), 'w+') as afp:
+        json.dump(app.openapi(), afp, indent=4)
+
+    print("Regenerate the Typescript API")
+    system("npx @nll/api-codegen-ts")

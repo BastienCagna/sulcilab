@@ -15,3 +15,7 @@ python setup.py develop --user
 # https://www.keycloak.org/getting-started/getting-started-docker
 # sudo docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:18.0.2 start-dev
 # Then go to: http://localhost:8080/admin/master/console
+
+npm install
+# npm i -D @nll/api-codegen-ts
+# npm i -D rimraf
