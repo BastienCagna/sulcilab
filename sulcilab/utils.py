@@ -1,7 +1,5 @@
 import os.path as op
 
-BUILD_PATH = op.realpath(op.join(__file__, "..", "..", "build"))
-
 
 def split_label_name(name):
     if name.endswith('_left'):
