@@ -5,6 +5,10 @@
 python setup.py develop --user
 npm install
 
+python cli/create_account.py admin Admin admin --admin
+python cli/import_matplotlib_colors.py
+python cli/install_nomenclatures.py ./data/labels.csv ./data/sulcal_root_colors.hie
+
 # python manage.py migrate
 # echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$SULCILAB_SUPERUSER_USERNAME', '$SULCILAB_SUPERUSER_EMAIL', '$SULCILAB_SUPERUSER_PASSWORD')" | python manage.py shell
 # python manage.py setup_default_data

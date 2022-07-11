@@ -5,10 +5,11 @@ from typing import List
 from pydantic import BaseModel
 from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
-from sulcilab.database import SessionLocal, get_db
+from sulcilab.database import get_db
 from sulcilab.core.schemas import SulciLabReadingModel
 from .database import PDatabase
 from .species import PSpecies
+
 
 #############
 # ORM Model #
@@ -17,7 +18,7 @@ class Subject(Base, SulciLabBase):
     __tablename__ = "subjects"
 
     database_id = Column(Integer, ForeignKey("databases.id"))
-    database = relationship("BrainVisaDB")
+    database = relationship("Database", back_populates="subjects")
     center = Column(String)
     name = Column(String)
     graphs = relationship("Graph", back_populates="subject")

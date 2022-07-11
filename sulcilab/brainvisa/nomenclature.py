@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
 class Nomenclature(Base, SulciLabBase):
     __tablename__ = "nomenclatures"
 
-    name = Column(String)
+    name = Column(String, unique=True)
     default = Column(Boolean, default=False) # replace this by a value in settings and provide the suited controller
     labels = relationship("Label", back_populates="nomenclature")
 

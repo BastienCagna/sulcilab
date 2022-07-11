@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand, CommandError
 from sulcilab.brainvisa import Nomenclature, Color, Label
 from soma import aims
 from tqdm import tqdm
-from sulcilab.utils import split_label_name
+from sulcilab.utils.misc import split_label_name
 
 
 def list_names_and_colors(nom_node, parent=None):

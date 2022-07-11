@@ -31,3 +31,11 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def sulcilab_cli(func):
+    def wrapper_func(*args, **kwargs):
+        Base.metadata.create_all(bind=engine)
+        func(*args, **kwargs)
+
+    return wrapper_func

@@ -26,6 +26,7 @@ class User(Base, SulciLabBase):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
+    is_admin = Column(Boolean, default=False)
 
     labelingsets = relationship("LabelingSet", back_populates="author")
     sharedsets = relationship("SharedLabelingSet", back_populates="target")
@@ -54,6 +55,7 @@ class PUserSignIn(BaseModel):
     password: str
 class PUser(PUserBase, SulciLabReadingModel):
     is_active: bool
+    is_admin: bool
     # labelingsets: list[LabelingSet] = []
     # sharedsets: list[LabelingSet] = []
 
@@ -70,6 +72,19 @@ def create_user(db: Session, item: PUserCreate):
         email=item.email,
         username=item.username,
         hashed_password=hashed_password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def create_admin_user(db: Session, item: PUserCreate):
+    hashed_password = item.password + "notreallyhashed"
+    db_user = User(
+        email=item.email,
+        username=item.username,
+        hashed_password=hashed_password,
+        is_admin=True
     )
     db.add(db_user)
     db.commit()

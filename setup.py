@@ -26,7 +26,7 @@ setuptools.setup(
     author_email='bastien.cagna@cea.fr',
     url='',
     packages=['sulcilab'],
-    install_requires=['Cython', 'fastapi', 'sqlalchemy', 'numpy', 'pandas', 'nibabel', 'matplotlib', 'PyJWT', 'python-decouple'],
+    install_requires=['Cython', 'fastapi', 'sqlalchemy', 'numpy', 'pandas', 'nibabel', 'matplotlib', 'PyJWT', 'python-decouple', 'tqdm'],
     extras_require={
         'dev': [
             'pytest'

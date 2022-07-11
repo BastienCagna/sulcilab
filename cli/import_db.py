@@ -8,10 +8,10 @@
 
 """
 
-from dico_toolbox.database import BVDatabase
-from soma import aims
+# from dico_toolbox.database import BVDatabase
+# from soma import aims
 from tqdm import tqdm
-from sulcilab.utils import split_label_name
+from sulcilab.utils.misc import split_label_name
 
 from sulcilab.core import crud
 from sulcilab.brainvisa import models as bmodels

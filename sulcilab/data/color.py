@@ -59,29 +59,29 @@ class PColor(PColorBase, SulciLabReadingModel):
 ###################
 # CRUD Operations #
 ###################
-def get_color(db: Session, color_id: int):
-    return db.query(Color).filter(Color.id == color_id).first()
+# def get_color(db: Session, color_id: int):
+#     return db.query(Color).filter(Color.id == color_id).first()
 
-def get_color_by_name(db: Session, name: str):
-    if name == DEFAULT_COLOR_NAME:
-        return None
-    return db.query(Color).filter(Color.name == name).first()
+# def get_color_by_name(db: Session, name: str):
+#     if name == DEFAULT_COLOR_NAME:
+#         return None
+#     return db.query(Color).filter(Color.name == name).first()
 
 def get_color_by_values(db: Session, r:int, g:int, b:int):
     return db.query(Color).filter(Color.red == r).filter(Color.green == g).filter(Color.blue == b).first()
 
 
-def get_colors(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Color).offset(skip).limit(limit).all()
+# def get_colors(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(Color).offset(skip).limit(limit).all()
 
-def create_color(db: Session, color: PColorCreate):
-    db_item = Color(
-        name=color.name, red=color.red, green=color.green, blue=color.blue
-    )
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
+# def create_color(db: Session, color: PColorCreate):
+#     db_item = Color(
+#         name=color.name, red=color.red, green=color.green, blue=color.blue
+#     )
+#     db.add(db_item)
+#     db.commit()
+#     db.refresh(db_item)
+#     return db_item
 
 
 ##########

@@ -11,3 +11,4 @@ def split_label_name(name):
             return name[:-7], "R"
         return name[:-6], "R"
     return name, "X"
+

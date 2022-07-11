@@ -1,10 +1,15 @@
+#!/usr/bin/python
+"""
+    Import Colors
+    =============
+    Add Matplotlib and CSS named colors in the database. Those colors can be used in nomenclatures.
+"""
+
 import matplotlib.colors as mcolors
 
-from sulcilab.core import models, crud
-from sulcilab.database import SessionLocal, engine
-from sulcilab.data.models import Color
-
-models.Base.metadata.create_all(bind=engine)
+from sulcilab.core import crud
+from sulcilab.database import SessionLocal, sulcilab_cli
+from sulcilab.data.color import Color
 
 
 def hex_to_rgb(value):
@@ -25,6 +30,8 @@ def add_colors(new_colors):
             c_obj = crud.create(db, Color, color)
             lcolors[c] = c_obj
 
+
+@sulcilab_cli
 def main():
     """ Import nammed color included in Matplotlib to the database. """
     add_colors(mcolors.TABLEAU_COLORS)

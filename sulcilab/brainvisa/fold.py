@@ -20,7 +20,7 @@ class Fold(Base, SulciLabBase):
     __tablename__ = "folds"
 
     graph_id = Column(Integer, ForeignKey("graphs.id"))
-    # graph = relationship("Graph", back_populates="folds")
+    graph = relationship("Graph", back_populates="folds")
     vertex = Column(Integer)
 
 

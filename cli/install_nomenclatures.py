@@ -12,17 +12,14 @@
 # from django.core.management.base import BaseCommand, CommandError
 # from sulcilab.brainvisa import Nomenclature, Color, Label
 import pandas as pd
-from tqdm import tqdm
-from sulcilab.utils import split_label_name
-from soma import aims
+from sulcilab.utils.misc import split_label_name
 import numpy as np
 import argparse
 from sulcilab.core import crud
-from sulcilab.data import models as dmodels
-from sulcilab.data import schemas as dschemas
-from sulcilab.brainvisa import models as bmodels
-from sulcilab.brainvisa import schemas as bschemas
-from sulcilab.database import SessionLocal, engine
+from sulcilab.database import sulcilab_cli, SessionLocal
+from sulcilab.brainvisa import Nomenclature, Label
+from sulcilab.data import Color
+from sulcilab.utils.io import read_hie
 
 
 def list_names_and_colors(nom_node, parent=None):
@@ -47,6 +44,7 @@ def list_names_and_colors(nom_node, parent=None):
     return names, colors, parents
 
 
+@sulcilab_cli
 def main(csv_f, nom_f):
     db = SessionLocal()
 
@@ -54,16 +52,18 @@ def main(csv_f, nom_f):
     labels = pd.read_csv(csv_f)
 
     # Read the nomenclature file that should contain all the labels
-    hnames, colors, parents = list_names_and_colors(aims.read(nom_f))
+    # hnames, colors, parents = list_names_and_colors(aims.read(nom_f))
+    hnames, colors, parents = read_hie(nom_f, flatten=True)
+
     # Split each name in name + hemi
     names, hemis = zip(*list(split_label_name(name) for name in hnames))
 
     # Load existing colors and create new in not already existing
-    lcolors = {(c.red, c.green, c.blue, c.alpha) : c for c in crud.get_all(db, dmodels.Color)}
+    lcolors = {(c.red, c.green, c.blue, c.alpha) : c for c in crud.get_all(db, Color)}
     print("Load {} colors from the database".format(len(colors)))
     for c in colors:
         if not c in lcolors.keys():
-            c_obj = crud.create(db, dmodels.Color, red=c[0], green=c[1], blue=c[2], alpha=c[3])
+            c_obj = crud.create(db, Color, red=c[0], green=c[1], blue=c[2], alpha=c[3])
             lcolors[c] = c_obj
 
     # Create the nomenclatures defined in the csv file
@@ -71,7 +71,7 @@ def main(csv_f, nom_f):
     for k in labels.keys():
         if not k in ['shortname', 'fr', 'en', 'fr_desc', 'en_desc']:
             print("Creating new nomenclature: " + k)
-            nomenclatures[k] = crud.create(db, bmodels.Nomenclature, name=k)
+            nomenclatures[k] = crud.create(db, Nomenclature, name=k)
 
     # Then add labels
     added_labels = {}
@@ -85,7 +85,7 @@ def main(csv_f, nom_f):
                 found = True
                 break
         if not found:
-            print("{} was not found in .hie file. Set random color and both hemisphere and no parent to this one.".format(shortname))
+            print("{} was not found in .hie file. Set random color, both hemisphere and no parent to this one.".format(shortname))
             hemi = 'X'
             color = lcolors[colors[np.random.randint(0, len(colors))]]
             ln = -1
@@ -106,7 +106,7 @@ def main(csv_f, nom_f):
             left = True
             right = True
 
-        label = crud.create(db, bmodels.Label,# Label.objects.create(
+        label = crud.create(db, Label,# Label.objects.create(
             shortname=shortname, 
             left=left, 
             right=right, 
@@ -142,5 +142,5 @@ if __name__ == "__main__":
     parser.add_argument('nom_file', type=str, help='.hie file')
     args = parser.parse_args()
 
-    main(args['file'], args['nom_file'])
+    main(args.file, args.nom_file)
 
