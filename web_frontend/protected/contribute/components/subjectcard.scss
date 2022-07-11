@@ -1,0 +1,85 @@
+.subject-card {
+    border: 1px solid rgb(181, 181, 181);
+    background-color: rgb(52, 57, 62);
+    color: white;
+    width: 12em;
+    box-shadow: none;
+    transition: box-shadow .2s;
+    -webkit-transition: box-shadow .2s;
+    -moz-transition: box-shadow .2s;
+    -ms-transition: box-shadow .2s;
+    -o-transition: box-shadow .2s;
+
+    h5 {
+        margin: 0px;
+        padding: .5em;
+        display: block;
+        text-align: left;
+        background-color: rgb(2, 148, 0);
+    }
+
+}
+.subject-card:hover {
+    box-shadow: 0px 0px 10px #aaa;
+    cursor: pointer;
+}
+
+
+.subject-popover {
+    margin: 0px;
+    padding: .2em;
+    padding-top: 0.1em;
+    background-color: #aaa;
+
+    .body {
+        position: relative;
+        top: 10px;
+        left: 10px;
+        margin: .5em;
+        margin-bottom: 0px;
+    }
+    
+    p {
+        font-size: medium;
+    }
+
+    .labelingsets {
+        padding: 0px;
+        margin: 0px;
+        width: 100%;
+
+        li {
+            margin: .1em 0px;
+            padding: .2em;
+            height: 20pt;
+            list-style: none;
+
+            .progress-bar {
+                display: block;
+                background-color: rgb(1, 107, 1);
+                height: 20pt;
+                position: relative;
+                z-index: 0;
+                border-radius: 4px;
+                -webkit-border-radius: 4px;
+                -moz-border-radius: 4px;
+                -ms-border-radius: 4px;
+                -o-border-radius: 4px;
+}
+            .lset-title {
+                padding: 0.2em;
+                display: block;
+                position: absolute;
+                z-index: 1;
+                width: inherit;
+                color: white;
+            }
+        }
+        li:hover {
+            cursor: pointer;
+            .progress-bar {
+                background-color: lighten(green, 10);
+            }
+        }
+    }
+}

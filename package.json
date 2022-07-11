@@ -14,6 +14,10 @@
         "web-eject": "react-app-rewired eject"
     },
     "dependencies": {
+        "@blueprintjs/core": "^4.6.0",
+        "@blueprintjs/icons": "^4.3.1",
+        "@blueprintjs/popover2": "^1.4.2",
+        "@blueprintjs/select": "^4.4.2",
         "@testing-library/jest-dom": "^5.16.4",
         "@testing-library/react": "^13.3.0",
         "@testing-library/user-event": "^13.5.0",
@@ -31,6 +35,7 @@
     "devDependencies": {
         "openapi-typescript-codegen": "^0.23.0",
         "react-app-rewired": "^2.2.1",
+        "sass": "^1.53.0",
         "typescript": "^4.6.2"
     },
     "eslintConfig": {
