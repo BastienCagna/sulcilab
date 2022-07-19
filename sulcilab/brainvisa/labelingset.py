@@ -3,15 +3,16 @@ from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from pydantic import BaseModel
-from sulcilab.database import SulciLabBase, Base
+from sulcilab.database import SulciLabBase, Base, SessionLocal, get_db
 from sulcilab.core import crud
-from sulcilab.database import SessionLocal, get_db
 from sulcilab.core.schemas import SulciLabReadingModel
-from sulcilab.core.user import PUserBase
 from .nomenclature import PNomenclature
 from .graph import PGraph
 from .labeling import PLabeling
 
+import typing
+if typing.TYPE_CHECKING:
+    from sulcilab.core.user import PUserBase
 
 #############
 # ORM Model #
@@ -48,7 +49,7 @@ class PLabelingSetBase(BaseModel):
 class PLabelingSetCreate(PLabelingSetBase):
     pass
 class PLabelingSet(PLabelingSetBase, SulciLabReadingModel):
-    author: PUserBase
+    author: 'PUserBase'
     graph: PGraph
     nomenclature: PNomenclature
 

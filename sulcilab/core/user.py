@@ -13,8 +13,8 @@ from sulcilab.auth.auth_handler import signJWT, get_current_user
 from sulcilab.core.jwt import PJWT
 
 import typing
-if typing.TYPE_CHECKING:
-    from sulcilab.brainvisa.schemas import LabelingSet
+# if typing.TYPE_CHECKING:
+from sulcilab.brainvisa import LabelingSet
 
 #############
 # ORM Model #

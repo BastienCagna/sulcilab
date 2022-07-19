@@ -7,15 +7,15 @@ from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
 from sulcilab.core.schemas import SulciLabReadingModel
+import enum
 
-
-class DefaultSpecies(Enum):
-    BABOON = ('Baboon', 'Babouin'),
-    CHIMPENZEE = ('Chimpanzee', 'Chimpanzé'),
-    GORILLA = ('Gorilla', 'Gorille'),
-    HUMAN = ('Human', 'Humain'),
-    MARMOUSET = ('Marmouset', 'Marmouset'),
-    MACAQUE = ('Macaque', 'Macaque'),
+class DefaultSpecies(enum.Enum):
+    BABOON = ('Baboon', 'Babouin')
+    CHIMPENZEE = ('Chimpanzee', 'Chimpanzé')
+    GORILLA = ('Gorilla', 'Gorille')
+    HUMAN = ('Human', 'Humain')
+    MARMOUSET = ('Marmouset', 'Marmouset')
+    MACAQUE = ('Macaque', 'Macaque')
     PONGO = ('Orang outan', 'Orang outan')
 
 #############

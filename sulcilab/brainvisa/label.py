@@ -7,8 +7,11 @@ from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
 from sulcilab.core.schemas import SulciLabReadingModel
-from .nomenclature import PNomenclature
-from sulcilab.data.color import PColor
+import typing
+
+if typing.TYPE_CHECKING:
+    from .nomenclature import PNomenclature
+    from sulcilab.data import PColor
 
 #############
 # ORM Model #
@@ -59,8 +62,8 @@ class PLabelCreate(PLabelBase):
     pass
 class PLabel(PLabelBase, SulciLabReadingModel):
     parent: 'PLabel'
-    color: PColor
-    nomenclature: PNomenclature
+    color: 'PColor'
+    nomenclature: 'PNomenclature'
 
 ###################
 # CRUD Operations #
