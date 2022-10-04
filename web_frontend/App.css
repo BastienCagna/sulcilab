@@ -1,0 +1,14 @@
+.app {
+  min-height: 100vh;
+}
+
+.app footer {
+  text-align: center;
+  font-size: small;
+  color: #daccd5;
+}
+
+.app footer a {
+  color: inherit;
+}
+/*# sourceMappingURL=App.css.map */

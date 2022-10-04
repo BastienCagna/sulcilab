@@ -23,3 +23,19 @@ class SulciLabBase:
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def sulcilab_cli(func):
+    def wrapper_func(*args, **kwargs):
+        Base.metadata.create_all(bind=engine)
+        func(*args, **kwargs)
+
+    return wrapper_func

@@ -1,19 +1,50 @@
 {
-    // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
-    // Pointez pour afficher la description des attributs existants.
-    // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: FastAPI",
-            "type": "python",
-            "request": "launch",
-            "module": "uvicorn",
-            "args": [
-                "main:app"
-            ],
-            "jinja": true,
-            "justMyCode": true
-        }
-    ]
+  // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+  // Pointez pour afficher la description des attributs existants.
+  // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python : fichier actif",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Python: FastAPI",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["main:app"],
+      "jinja": true,
+      "justMyCode": true
+    },
+    {
+      "name": "Import DB",
+      "type": "python",
+      "request": "launch",
+      "program": "cli/import_db.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "/home/bastien/data/archi",
+        "Archi",
+        "archi",
+        "3.3",
+        "session1_manual",
+        "Humain"
+      ]
+    },
+    {
+      "name": "Import defaults",
+      "type": "python",
+      "request": "launch",
+      "program": "cli/setup_default_data.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": []
+    }
+  ]
 }

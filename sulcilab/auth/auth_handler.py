@@ -1,15 +1,16 @@
-# app/auth/auth_handler.py
-
 import time
 from sqlalchemy.orm import Session
 from sulcilab.core import crud
-from sulcilab.core.models import User
 from fastapi import Depends
 
 import jwt
 from decouple import config
-from sulcilab.core.models import User
-from sulcilab.core.schemas import JWT
+
+from sulcilab.core.jwt import PJWT
+
+import typing
+if typing.TYPE_CHECKING:
+    from sulcilab.core.user import User, PUser
 
 JWT_SECRET = config("secret")
 JWT_ALGORITHM = config("algorithm")
@@ -20,7 +21,7 @@ def token_response(token: str):
         "token": token
     }
 
-def signJWT(user: User) -> JWT:#Dict[str, str]:
+def signJWT(user: 'PUser') -> PJWT:#Dict[str, str]:
     payload = {
         "id": user.id,
         "email": user.email,
