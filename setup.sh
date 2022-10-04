@@ -2,8 +2,7 @@
 
 # mv $DATA_ROOT/db.sqlite3 $DATA_ROOT/db.sqlite3.back;
 
-python setup.py develop --user
-
+python setup.py develop
 
 # python manage.py migrate
 # echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$SULCILAB_SUPERUSER_USERNAME', '$SULCILAB_SUPERUSER_EMAIL', '$SULCILAB_SUPERUSER_PASSWORD')" | python manage.py shell
