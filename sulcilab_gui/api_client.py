@@ -1,7 +1,7 @@
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.routing import APIRoute
-from .router import api_router
-from .database import Base, engine
+from sulcilab.router import api_router
+from sulcilab.database import Base, engine
 
 
 Base.metadata.create_all(bind=engine)
@@ -13,6 +13,3 @@ def custom_generate_unique_id(route: APIRoute):
 app = FastAPI(generate_unique_id_function=custom_generate_unique_id)
 app.include_router(api_router) #, prefix=config.API_V1_STR)
 
-
-# @app.on_event("startup")
-# def startup():

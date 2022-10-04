@@ -20,6 +20,7 @@ const subjects = [
     {id: 1, name: "Frédéric", database: databases[0], labelingsets: [{id: "3", name:'Left', hemisphere: "left", completed: 0.56}, {id: "4", name:'Right', hemisphere: "right", completed: 0.}]},
     {id: 2, name: "Alphonse", database: databases[1], labelingsets: [{id: "5", name:'Left', hemisphere: "left", completed: 0.56}]},
 ]
+
 interface Database {
     id: string | null;
     name: string;
@@ -50,9 +51,9 @@ function filterSubject(query: string, subject: Subject, database: Database|null)
         return false;
     }
     let subjectStr = `${subject.name} ${database ? database.name: ''}`.toLowerCase();
-    subject.labelingsets.forEach(set => {
-        subjectStr += ` ${set.name} ${set.hemisphere}`
-    });
+    // subject.labelingsets.forEach(set => {
+    //     subjectStr += ` ${set.name} ${set.hemisphere}`
+    // });
 
     return `${subjectStr}`.indexOf(query.toLowerCase()) >= 0;
 }
@@ -68,8 +69,12 @@ export default class Contribute extends React.Component {
             selectedSubjects: subjects,
             query: ''
         };
+        //this.api = 
     }
 
+    loadDatabases() {
+
+    }
 
     filterSubjects = () => {
         console.log("database:", this.state.selectedDatabase);

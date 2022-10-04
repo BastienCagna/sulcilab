@@ -1,16 +1,13 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
 from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
-from typing import ForwardRef, List
+from typing import ForwardRef, List, Union
 from pydantic import BaseModel
 from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
 from sulcilab.core.schemas import SulciLabReadingModel
 
-import typing
-if typing.TYPE_CHECKING:
-    from .subject import PSubjectBase
 
 #############
 # ORM Model #
@@ -29,11 +26,10 @@ class Database(Base, SulciLabBase):
 ##################
 class PDatabaseBase(BaseModel):
     name: str
-    description: str | None
+    description: Union[str, None]
     path: str
 class PDatabaseCreate(PDatabaseBase):
     pass
-PDatabase = ForwardRef('PSubjectBase')
 class PDatabase(PDatabaseBase, SulciLabReadingModel):
     subjects: List['PSubjectBase'] = []
 
@@ -41,6 +37,8 @@ class PDatabase(PDatabaseBase, SulciLabReadingModel):
         orm_mode = True
 
 
+from .subject import PSubjectBase
+PDatabase.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################

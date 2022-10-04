@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
 from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
+from typing import List, Union
 from pydantic import BaseModel
 from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
@@ -10,8 +10,8 @@ from sulcilab.core.schemas import SulciLabReadingModel
 import os.path as op
 import enum
 
-from .subject import PSubject
-from .fold import PFold
+# from .subject import PSubject
+# from .fold import PFold
 
 class GraphVersion(enum.Enum):
     V30 = "3.0"
@@ -65,13 +65,16 @@ class PGraphBase(BaseModel):
     analysis: str
     hemisphere: str
     version: str
-    session: str | None
+    session: Union[str, None]
 class PGraphCreate(PGraphBase):
     pass
 class PGraph(PGraphBase, SulciLabReadingModel):
-    subject: PSubject
-    folds: list[PFold]
+    subject: "PSubject"
+    folds: "List[PFold]"
 
+from .subject import PSubject
+from .fold import PFold
+PGraph.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################

@@ -14,7 +14,7 @@ from sulcilab.core.jwt import PJWT
 
 import typing
 # if typing.TYPE_CHECKING:
-from sulcilab.brainvisa import LabelingSet
+# from sulcilab.brainvisa import LabelingSet
 
 #############
 # ORM Model #
@@ -56,9 +56,11 @@ class PUserSignIn(BaseModel):
 class PUser(PUserBase, SulciLabReadingModel):
     is_active: bool
     is_admin: bool
-    # labelingsets: list[LabelingSet] = []
-    # sharedsets: list[LabelingSet] = []
+    labelingsets: "List[PLabelingSet]" = []
+    sharedsets: "List[PLabelingSet]" = []
 
+from sulcilab.brainvisa.labelingset import PLabelingSet
+PUser.update_forward_refs()
 
 ###################
 # CRUD Operations #
@@ -91,6 +93,15 @@ def create_admin_user(db: Session, item: PUserCreate):
     db.refresh(db_user)
     return db_user
 
+# def get_user_token(db: Session, email: str, password: str):
+#     hpass = password + "notreallyhashed"
+#     try:
+#         user = crud.get_one_by(db, User, email=email, hashed_password=hpass)
+#         if user:
+#             return signJWT(user)
+#     except:
+#         return None
+
 ##########
 # Routes #
 ##########
@@ -107,7 +118,7 @@ async def login(user: PUserSignIn, db: Session = Depends(get_db)):
     except:
         raise HTTPException(401, "Wrong credentials")
 
-@router.get("/all", dependencies=[Depends(JWTBearer())], response_model=list[PUser])
+@router.get("/all", dependencies=[Depends(JWTBearer())], response_model=List[PUser])
 def read(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     # user = get_current_user(db, token)
     users = crud.get_all(db, User, skip=skip, limit=limit)

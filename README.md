@@ -5,7 +5,7 @@ SulciLab is a web based application for shared brain sulci labelling.
 ```shell
 git clone
 python3 -m venv venv
-. /venv/bin/activate
+. venv/bin/activate
 ./setup.sh
 
 # Start the backend

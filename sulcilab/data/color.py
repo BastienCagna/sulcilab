@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sulcilab.database import SulciLabBase, Base
 from pydantic import BaseModel
 from sulcilab.core.schemas import SulciLabReadingModel
-import secrets
+# import secrets
 from sqlalchemy.orm import Session
 # from sulcilab.data import models, schemas
 from fastapi import APIRouter, Depends, HTTPException
@@ -55,6 +55,8 @@ class PColorCreate(PColorBase):
 class PColor(PColorBase, SulciLabReadingModel):
     id: int
 
+
+PColor.update_forward_refs()
 
 ###################
 # CRUD Operations #

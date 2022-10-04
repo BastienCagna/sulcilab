@@ -1,18 +1,12 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
 from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
+from typing import List, Union
 from pydantic import BaseModel
 from sulcilab.database import SulciLabBase, Base, SessionLocal, get_db
 from sulcilab.core import crud
 from sulcilab.core.schemas import SulciLabReadingModel
-from .nomenclature import PNomenclature
-from .graph import PGraph
-from .labeling import PLabeling
 
-import typing
-if typing.TYPE_CHECKING:
-    from sulcilab.core.user import PUserBase
 
 #############
 # ORM Model #
@@ -44,15 +38,21 @@ class PLabelingSetBase(BaseModel):
     author_id: int
     graph_id: int
     nomenclature_id: int
-    labelings: list[PLabeling] = []
-    comment: str | None
+    labelings: List["PLabeling"] = []
+    comment: Union[str, None]
 class PLabelingSetCreate(PLabelingSetBase):
     pass
 class PLabelingSet(PLabelingSetBase, SulciLabReadingModel):
     author: 'PUserBase'
-    graph: PGraph
-    nomenclature: PNomenclature
+    graph: "PGraph"
+    nomenclature: "PNomenclature"
 
+from sulcilab.core.user import PUserBase
+from .nomenclature import PNomenclature
+from .graph import PGraph
+from .labeling import PLabeling
+PLabelingSetBase.update_forward_refs()
+PLabelingSet.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################

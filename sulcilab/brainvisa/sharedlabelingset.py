@@ -7,12 +7,7 @@ from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
 from sulcilab.core.schemas import SulciLabReadingModel
-from .labelingset import PLabelingSet
 import enum
-
-import typing
-if typing.TYPE_CHECKING:
-    from sulcilab.core.user import PUser
 
 
 class SharingMode(enum.Enum):
@@ -37,7 +32,7 @@ class SharedLabelingSet(Base, SulciLabBase):
 # Pydantic Model #
 ##################
 class PSharedLabelingSetBase(BaseModel):
-    labelingset: PLabelingSet
+    labelingset: 'PLabelingSet'
     target: 'PUser'
     mode: int
 class PSharedLabelingSetCreate(PSharedLabelingSetBase):
@@ -45,6 +40,9 @@ class PSharedLabelingSetCreate(PSharedLabelingSetBase):
 class PSharedLabelingSet(PSharedLabelingSetBase, SulciLabReadingModel):
     pass
 
+from sulcilab.core.user import PUser
+from .labelingset import PLabelingSet
+PSharedLabelingSet.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################

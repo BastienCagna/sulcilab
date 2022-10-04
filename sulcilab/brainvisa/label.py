@@ -1,17 +1,13 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
 from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
+from typing import List, Union
 from pydantic import BaseModel
 from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
 from sulcilab.core.schemas import SulciLabReadingModel
-import typing
 
-if typing.TYPE_CHECKING:
-    from .nomenclature import PNomenclature
-    from sulcilab.data import PColor
 
 #############
 # ORM Model #
@@ -52,7 +48,7 @@ class PLabelBase(BaseModel):
     en_name: str
     fr_description: str
     en_description: str
-    parent_id: int | None
+    parent_id: Union[int, None]
     color_id: int
     nomenclature_id: int
     left: bool
@@ -62,8 +58,12 @@ class PLabelCreate(PLabelBase):
     pass
 class PLabel(PLabelBase, SulciLabReadingModel):
     parent: 'PLabel'
-    color: 'PColor'
     nomenclature: 'PNomenclature'
+    # color: 'PColor'
+
+from .nomenclature import PNomenclature
+# from sulcilab.data.color import PColor
+PLabel.update_forward_refs()
 
 ###################
 # CRUD Operations #
@@ -79,3 +79,4 @@ router = APIRouter()
 def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     # user = get_current_user(db, token)
     return crud.get_all(db, Label, skip=skip, limit=limit)
+

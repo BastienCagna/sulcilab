@@ -7,8 +7,6 @@ from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import get_db
 from sulcilab.core.schemas import SulciLabReadingModel
-from .database import PDatabase
-from .species import PSpecies
 
 
 #############
@@ -36,13 +34,16 @@ class PSubjectBase(BaseModel):
     database_id: int
     center: str
     name: str
-    species: PSpecies
+    species: "PSpecies"
 class PSubjectCreate(PSubjectBase):
     pass
 class PSubject(PSubjectBase, SulciLabReadingModel):
-    database: PDatabase
+    database: "PDatabase"
 
 
+from .database import PDatabase
+from .species import PSpecies
+PSubject.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################

@@ -6,11 +6,7 @@ from pydantic import BaseModel
 from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
-from sulcilab.core.schemas import SulciLabReadingModel
-
-import typing
-if typing.TYPE_CHECKING:
-    from .label import PLabel
+# from sulcilab.core.schemas import SulciLabReadingModel
 
 
 #############
@@ -26,16 +22,16 @@ class Nomenclature(Base, SulciLabBase):
     def __str__(self) -> str:
         return "Nomenclature#{}: {}".format(self.id, self.name)
 
-
-
 ##################
 # Pydantic Model #
 ##################
 class PNomenclature(BaseModel):
     name: str
     default: bool
-    labels: list['PLabel']
+    labels: List['PLabel']
 
+from .label import PLabel
+PNomenclature.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################
