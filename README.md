@@ -1,16 +1,20 @@
 # SulciLab Backend
 SulciLab is a web based application for shared brain sulci labelling.
 
+
+## Subprojects
+
+### Sulcilab
+The labelization database manager itself.
+
+### Sulcilab GUI
+A simple PyQT application to open Brainvisa labelization tools using th eSulcilab framework.
+
+### Sulcilab Web
+A ReactJS web frontend to connect to the Sulcilab database and labelize graphs online.
+
+
 ## Getting started
-
-### Requirements
-Python >= 3.10
-```
-python3
-python3-venv
-```
-
-### Setup
 ```shell
 git clone https://github.com/BastienCagna/sulcilab_frontend.git
 python3 -m venv venv
@@ -40,6 +44,10 @@ Automatic generation of the typescript client:
 ```shell
 npm run api-build
 ```
+
+
+## Development
+
 
 ### Empty item
 ```python
@@ -80,3 +88,6 @@ def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_all(db, ..., skip=skip, limit=limit)
 
 ```
+
+### Generate API client
+Use FastAPI tools to generate the Javascript API client for web apps.
