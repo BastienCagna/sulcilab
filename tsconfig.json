@@ -22,6 +22,6 @@
     "outDir": "./public/js"
   },
   "include": [
-    "web_frontend/**/*"
+    "sulcilab_web/**/*"
   ]
 }

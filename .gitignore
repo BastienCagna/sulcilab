@@ -14,4 +14,4 @@ node_modules/
 build/
 
 *.css
-*.css.map
+*.css.ma
