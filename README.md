@@ -20,6 +20,9 @@ python3 -m venv venv
 # Start the backend
 uvicorn sulcilab.main:app --reload
 
+# Compile SCSS files (or use sass watcher in your IDE)
+sass --watch sass:css
+
 # Start the web frontend
 npm run web-start
 ``` 

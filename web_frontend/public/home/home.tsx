@@ -11,6 +11,7 @@ export default class Home extends React.Component {
         <div className="App">
         <header className="App-header">
           <h1>Sulci Lab</h1>
+          <h2>Studying Sulci Together</h2>
           <img src={logo} className="App-logo" alt="logo" />
     
           <nav className="sl-nav">
@@ -20,11 +21,11 @@ export default class Home extends React.Component {
             <Link to="contribute" className="contribute">
                 <h3>Manual Labeling</h3>
             </Link>
+            <Link to="signin" className="signin">
+                <h3>Sign in</h3>
+            </Link>
           </nav>
 
-          <p>
-            Studying Sulci Together
-          </p>
         </header>
       </div>
     );}

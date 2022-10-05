@@ -14,11 +14,17 @@ cd "$DOWNLOAD_PATH"
 
 wget -Nc "$NODE_URL"
 # unzip
+echo "Decompressing NodeJS..."
 tar -xf "$NODE_FILE" --strip-components=1
 # Install node
+echo "Compiling NodeJS..."
 ./configure --prefix="~/.local"
 make -j4
 make  install
 
 # Download the NPM install script and run it
-wget -c "https://www.npmjs.org/install.sh" | sh
+echo "Installing NPM..."
+wget -c "https://www.npmjs.org/install.sh"
+./install.sh
+rm install.sh
+npm install -g npm@latest
