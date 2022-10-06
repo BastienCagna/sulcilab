@@ -12,23 +12,19 @@ else
     ./install_node.sh
 fi
 
-
+# python -m venv venv
+# . venv/bin/activate
 python setup.py develop --user
 npm install
 
-# mv db.sqlite db.sqlite.back
+mv db.sqlite db.sqlite.back
 
 python cli/create_account.py admin Admin admin --admin
 python cli/setup_default_data.py
 python cli/install_nomenclatures.py ./data/labels.csv ./data/sulcal_root_colors.hie
 
-# python manage.py migrate
-# echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$SULCILAB_SUPERUSER_USERNAME', '$SULCILAB_SUPERUSER_EMAIL', '$SULCILAB_SUPERUSER_PASSWORD')" | python manage.py shell
-# python manage.py setup_default_data
-# python manage.py install_nomenclatures ./data/labels.csv /casa/host/src/brainvisa-share/master/nomenclature/hierarchy/sulcal_root_colors.hie
-# python manage.py setup_demo_data ./.data
+# BUILD the FastAPI javascript client
+npm run api-build
 
-# Keycloak
-# https://www.keycloak.org/getting-started/getting-started-docker
-# sudo docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:18.0.2 start-dev
-# Then go to: http://localhost:8080/admin/master/console
+# Setup at Neurospin
+# python cli/import_db.py /neurospin/dico/data/bv_databases/human/manually_labeled/archi Archi archi 3.3 session1_manual Human

@@ -59,10 +59,10 @@ class PLabelCreate(PLabelBase):
 class PLabel(PLabelBase, SulciLabReadingModel):
     parent: 'PLabel'
     nomenclature: 'PNomenclature'
-    # color: 'PColor'
+    color: 'PColor'
 
 from .nomenclature import PNomenclature
-# from sulcilab.data.color import PColor
+from sulcilab.data.color import PColor
 PLabel.update_forward_refs()
 
 ###################

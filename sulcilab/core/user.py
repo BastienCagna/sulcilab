@@ -56,10 +56,13 @@ class PUserSignIn(BaseModel):
 class PUser(PUserBase, SulciLabReadingModel):
     is_active: bool
     is_admin: bool
-    labelingsets: "List[PLabelingSet]" = []
-    sharedsets: "List[PLabelingSet]" = []
+    labelingsets: "List" = []
+    sharedsets: "List" = []
+    # TODO: verify if it works properly without the type specification
+    # labelingsets: "List[PLabelingSet]" = []
+    # sharedsets: "List[PLabelingSet]" = []
 
-from sulcilab.brainvisa.labelingset import PLabelingSet
+# from sulcilab.brainvisa.labelingset import PLabelingSet
 PUser.update_forward_refs()
 
 ###################
@@ -109,14 +112,16 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 router = APIRouter()
 @router.post("/login", response_model=PJWT)
-async def login(user: PUserSignIn, db: Session = Depends(get_db)):
+# async def login(user: PUserSignIn, db: Session = Depends(get_db)):
+def login(user: PUserSignIn, db: Session = Depends(get_db)):
     hpass = user.password + "notreallyhashed"
-    try:
+    if '@' in user.email:
         user = crud.get_one_by(db, User, email=user.email, hashed_password=hpass)
-        if user:
-            return signJWT(user)
-    except:
-        raise HTTPException(401, "Wrong credentials")
+    else:
+        user = crud.get_one_by(db, User, username=user.email, hashed_password=hpass)
+    if user:
+        return signJWT(user)
+    raise HTTPException(401, "Wrong credentials")
 
 @router.get("/all", dependencies=[Depends(JWTBearer())], response_model=List[PUser])
 def read(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -129,6 +134,4 @@ def create(user: PUserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_one_by(db, User, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="This Email already used.")
-    return crud.create_user(db, user)
-
-
+    return create_user(db, user) #crud.create_user(db, user)

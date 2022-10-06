@@ -89,5 +89,5 @@ def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 ```
 
-### Generate API client
-Use FastAPI tools to generate the Javascript API client for web apps.
+
+## Notes

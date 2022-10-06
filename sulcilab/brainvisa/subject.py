@@ -44,6 +44,7 @@ class PSubject(PSubjectBase, SulciLabReadingModel):
 from .database import PDatabase
 from .species import PSpecies
 PSubject.update_forward_refs()
+PSubjectBase.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################

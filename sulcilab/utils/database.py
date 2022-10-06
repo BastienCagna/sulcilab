@@ -160,7 +160,7 @@ class FileDatabase:
         for item in listdir(path):
             item_path = op.join(path, item)
             if op.isdir(item_path):
-                if item[0] is not '.':
+                if not item[0] == '.':
                     sub_kwargs[levels[0]] = item
                     if len(levels) > 1:
                         self._scan_subdirectories(

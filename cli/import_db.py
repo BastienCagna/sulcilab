@@ -17,7 +17,7 @@ from sulcilab.utils.database import BVDatabase
 
 from sulcilab.core import crud
 from sulcilab.brainvisa import Fold, Label, Database, Graph, Subject, Labeling, LabelingSet, Nomenclature, Species
-from sulcilab.core import User
+from sulcilab.core import User, PUserCreate
 from sulcilab.core.user import create_admin_user
 from warnings import warn
 import argparse
@@ -85,7 +85,7 @@ def import_db(path, name, fr_spe, acq, ana, version, graph_sess, nom_name, verbo
     if len(users):
         user = users[0]
     else:
-        user = create_admin_user(db, {"username": "admin", "password": "admin", "email": ""})
+        user = create_admin_user(db, PUserCreate(username="admin", password="admin", email=""))
     print("Using user: ", user.username)
 
     if verbose:
