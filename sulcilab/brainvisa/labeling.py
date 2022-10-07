@@ -19,7 +19,7 @@ class Labeling(Base, SulciLabBase):
     __tablename__ = "labelings"
 
     fold_id = Column(Integer, ForeignKey("folds.id"))
-    fold = relationship("Fold", uselist=False)  # , back_populates="")
+    fold = relationship("Fold", uselist=False,)  # , back_populates="")
     label_id = Column(Integer, ForeignKey("labels.id"))
     label = relationship("Label", uselist=False)
     labelingset_id = Column(Integer, ForeignKey("labelingsets.id"))

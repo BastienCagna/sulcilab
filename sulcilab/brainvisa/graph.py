@@ -49,11 +49,20 @@ class Graph(Base, SulciLabBase):
         #     hemi=self.hemisphere,
         #     type=type
         # )[0]
-        v_path = op.join(self.subject.database.path, self.subject.center, "t1mri", self.acquisition, self.analysis, "folds", self.version)
+        # v_path = op.join(self.subject.database.path, self.subject.center, "t1mri", self.acquisition, self.analysis, "folds", self.version)
+        # if not self.session:
+        #     return op.join(v_path, "{}{}.arg".format(self.hemisphere, self.subject.name))
+        # else:
+        #     return op.join(v_path, self.session, "{}{}_{}.arg".format(self.hemisphere, self.subject.name, self.session))
+        v_path = op.join(self.subject.database.path, self.subject.center, self.subject.name, "t1mri", self.acquisition, self.analysis, "segmentation", "mesh")
+        return op.join(v_path, f"{self.subject.name}_{self.hemisphere.value}{type}.gii")
+
+    def get_path(self):
+        v_path = op.join(self.subject.database.path, self.subject.center, self.subject.name, "t1mri", self.acquisition, self.analysis, "folds", self.version.value)
         if not self.session:
-            return op.join(v_path, "{}{}.arg".format(self.hemisphere, self.subject.name))
+            return op.join(v_path, "{}{}.arg".format(self.hemisphere.value, self.subject.name))
         else:
-            return op.join(v_path, self.session, "{}{}_{}.arg".format(self.hemisphere, self.subject.name, self.session))
+            return op.join(v_path, self.session, "{}{}_{}.arg".format(self.hemisphere.value, self.subject.name, self.session))
 
 
 ##################

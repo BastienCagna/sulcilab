@@ -11,7 +11,7 @@ from sulcilab.core.schemas import SulciLabReadingModel
 from sulcilab.auth.auth_bearer import JWTBearer
 from sulcilab.auth.auth_handler import signJWT, get_current_user
 from sulcilab.core.jwt import PJWT
-
+import jwt
 import typing
 # if typing.TYPE_CHECKING:
 # from sulcilab.brainvisa import LabelingSet
@@ -128,6 +128,15 @@ def read(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), d
     # user = get_current_user(db, token)
     users = crud.get_all(db, User, skip=skip, limit=limit)
     return users
+
+@router.get("/me", dependencies=[Depends(JWTBearer())], response_model=List[PUser])
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    # FIXME: should work with verify_signature to true
+    # TODO: use .env to set the algorithms
+    user_id = jwt.decode(token, algorithms="HS256", options={"verify_signature": False})['id']
+    # user = get_current_user(db, token)
+    # users = crud.get_all(db, User, skip=skip, limit=limit)
+    return crud.get(db, User, id=user_id)
 
 @router.post("/", response_model=PUser)
 def create(user: PUserCreate, db: Session = Depends(get_db)):

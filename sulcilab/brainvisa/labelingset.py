@@ -47,6 +47,12 @@ class PLabelingSet(PLabelingSetBase, SulciLabReadingModel):
     graph: "PGraph"
     nomenclature: "PNomenclature"
 
+class PLabelingSetShort(BaseModel):
+    author_id: int
+    graph_id: int
+    nomenclature_id: int
+    comment: Union[str, None]
+
 from sulcilab.core.user import PUserBase
 from .nomenclature import PNomenclature
 from .graph import PGraph

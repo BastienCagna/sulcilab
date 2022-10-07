@@ -35,6 +35,7 @@ class PSubjectBase(BaseModel):
     center: str
     name: str
     species: "PSpecies"
+    graphs: List = []
 class PSubjectCreate(PSubjectBase):
     pass
 class PSubject(PSubjectBase, SulciLabReadingModel):
