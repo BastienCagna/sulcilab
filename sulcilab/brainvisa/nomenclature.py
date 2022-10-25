@@ -43,6 +43,6 @@ PNomenclature.update_forward_refs()
 router = APIRouter()
 
 @router.get("/all", response_model=List[PNomenclature])
-def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def get_all_nomenclatures(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     # user = get_current_user(db, token)
     return crud.get_all(db,  Nomenclature, skip=skip, limit=limit)

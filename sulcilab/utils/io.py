@@ -3,14 +3,21 @@ from typing import List
 from warnings import warn
 import nibabel as nb
 import os.path as op
+from os import makedirs
 
 
-def convert(s: str):
+def check_dir(path):
+    path = op.abspath(path)
+    makedirs(path, exist_ok=True)
+    return path
+
+
+def decode(s: str):
     if isinstance(s, (list, tuple)):
-        return list(convert(ss) for ss in s)
+        return list(decode(ss) for ss in s)
     splt = s.split(' ')
     if len(splt) > 1:
-        return list(convert(s) for s in splt)
+        return list(decode(s) for s in splt)
     else:
         if s.isnumeric():
             return int(s)
@@ -18,7 +25,11 @@ def convert(s: str):
             return float(s)
         except ValueError:
             return s
-    # Should be there
+    # Shouldn't be there
+
+
+def encode(data) -> str:
+    pass
 
 def text_to_dict(lines) -> dict:
     """
@@ -77,10 +88,26 @@ def text_to_dict(lines) -> dict:
         if len(line):
             splt = list(filter(lambda s: len(s)>0, line[:-1].split(" ")))
             if len(splt) > 1:
-                out[splt[0]] = convert(splt[1:]) if len(splt) > 2 else convert(splt[1])
+                out[splt[0]] = decode(splt[1:]) if len(splt) > 2 else decode(splt[1])
             else:
                 warn("The following line is invalid and was skipped while parsing:\n"+line)
     return out
+
+
+def dict_to_text(data) -> dict:
+    """
+
+    """
+    out = {}
+    for l, line in enumerate(data):
+        if len(line):
+            splt = list(filter(lambda s: len(s)>0, line[:-1].split(" ")))
+            if len(splt) > 1:
+                out[splt[0]] = decode(splt[1:]) if len(splt) > 2 else decode(splt[1])
+            else:
+                warn("The following line is invalid and was skipped while parsing:\n"+line)
+    return out
+
 
 ####
 # Nomenclatures
@@ -274,3 +301,8 @@ def read_arg(file, with_meshes=True):
         return metadata, nodes, edges, gii
     else:
         return metadata, nodes, edges, None
+
+
+def write_arg(file, metadata, nodes, edges):
+    raise NotImplementedError()
+    # with open(file, 'w') as fp:

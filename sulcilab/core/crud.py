@@ -37,9 +37,23 @@ def create(db: Session, model:SulciLabBase, item: dict=None, **kwargs):
     db.refresh(db_item)
     return db_item
 
-def update(db: Session, model:SulciLabBase, item):
-    raise NotImplementedError()
+def update(db: Session, model:SulciLabBase, **kwargs):
+    # if item is None:
+    item = {}
+    for k, v in kwargs.items():
+        item[getattr(model, k)] = v
+    #db_item = model(**item)
+    query = db.query(model)
+    query.filter(model.id == kwargs['id']).update(item)
+    db.commit()
+    #db.refresh(db_item)
+    # raise NotImplementedError()
+    #eturn db_item
+    return get(db, model, kwargs['id'])
 
 def delete(db: Session, model:SulciLabBase, id: int):
-    raise NotImplementedError()
+    query = db.query(model)
+    query.filter(model.id == id).delete()
+    db.commit()
+    # raise NotImplementedError()
 

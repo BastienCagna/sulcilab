@@ -104,6 +104,11 @@ def create_admin_user(db: Session, item: PUserCreate):
 #             return signJWT(user)
 #     except:
 #         return None
+def get_user_by_token(db: Session, token:str):
+    # FIXME: should work with verify_signature to true
+    # TODO: use .env to set the algorithms
+    user_id = jwt.decode(token, algorithms="HS256", options={"verify_signature": False})['id']
+    return crud.get(db, User, id=user_id)
 
 ##########
 # Routes #
@@ -131,12 +136,7 @@ def read(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), d
 
 @router.get("/me", dependencies=[Depends(JWTBearer())], response_model=List[PUser])
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    # FIXME: should work with verify_signature to true
-    # TODO: use .env to set the algorithms
-    user_id = jwt.decode(token, algorithms="HS256", options={"verify_signature": False})['id']
-    # user = get_current_user(db, token)
-    # users = crud.get_all(db, User, skip=skip, limit=limit)
-    return crud.get(db, User, id=user_id)
+    return get_user_by_token(db, token)
 
 @router.post("/", response_model=PUser)
 def create(user: PUserCreate, db: Session = Depends(get_db)):

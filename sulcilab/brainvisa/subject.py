@@ -26,6 +26,22 @@ class Subject(Base, SulciLabBase):
     def __str__(self):
         return "Subject#{}: {}".format(self.id, self.name)
 
+    def get_one_graph(self, hemisphere=None, acquisistion=None, analysis=None, version=None, session=None):
+        """ Return the first graph that match the requirements or None if any graph matches. """
+        for g in self.graphs:
+            if hemisphere is not None and hemisphere != g.hemisphere.value:
+                continue
+            if acquisistion is not None and acquisistion != g.acquisition:
+                continue
+            if analysis is not None and acquisistion != g.analysis:
+                continue
+            if version is not None and acquisistion != g.version:
+                continue
+            if session is not None and acquisistion != g.session:
+                continue
+            return g
+        return None
+
 
 ##################
 # Pydantic Model #
