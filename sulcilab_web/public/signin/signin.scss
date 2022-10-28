@@ -1,15 +1,5 @@
 
 .login-form {
-    margin: auto;
-    margin-top: 20vh;
-    margin-bottom: 10vh;
-    padding: 30px;
-    width: 40%;
-    min-width: 600px;
-    border: 1px solid grey;
-    border-radius: 2px;
-    background-color: rgb(187, 228, 205);
-
     font-size: 14pt;
 
     .form-item {
@@ -24,5 +14,9 @@
 
     input {
         margin: 0px 10px;
+    }
+    
+    a {
+        color: black;
     }
 }

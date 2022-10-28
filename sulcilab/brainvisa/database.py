@@ -28,13 +28,14 @@ class PDatabaseBase(BaseModel):
     name: str
     description: Union[str, None]
     path: str
+    
+    class Config:
+        orm_mode = True
 class PDatabaseCreate(PDatabaseBase):
     pass
 class PDatabase(PDatabaseBase, SulciLabReadingModel):
     subjects: List['PSubjectBase'] = []
 
-    class Config:
-        orm_mode = True
 
 
 from .subject import PSubjectBase

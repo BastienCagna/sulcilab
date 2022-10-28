@@ -46,7 +46,6 @@
   width: 75%;
   max-width: 900px;
   
-
   > * {
     margin: .5em;
     padding-top: 1em;
@@ -62,6 +61,7 @@
   }
 
   a {
+    color: white;
     box-shadow: 0px;
     transition: box-shadow .3s;
     -webkit-transition: box-shadow .3s;
@@ -89,16 +89,21 @@
 
 
 .learn {
-  background-color: rgb(57, 201, 236);
+  background-color: rgb(24, 165, 201);
 }
 .userform {
   background-color: grey;
 }
 .contribute {
-  background-color: rgb(37, 231, 37);
+  background-color: rgb(42, 158, 42);
 }
 .signin {
-  background-color: rgb(97, 97, 97);
+  background-color: rgb(179, 109, 23);
+  min-width: 500px;
+  padding-top: .5em;
+}
+.userinfos {
+  background-color: rgb(170, 167, 13);
 }
 
 /* The animation code */

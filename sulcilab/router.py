@@ -13,7 +13,7 @@ api_router.include_router(user.router, tags=["users"], prefix="/user")
 
 api_router.include_router(color.router, tags=["colors"], prefix="/color")
 
-# api_router.include_router(database.router, tags=["databases"], prefix="/database")
+api_router.include_router(database.router, tags=["databases"], prefix="/database")
 api_router.include_router(fold.router, tags=["folds"], prefix="/fold")
 # api_router.include_router(graph.router, tags=["graphs"], prefix="/graph")
 # api_router.include_router(label.router, tags=["labels"], prefix="/label")

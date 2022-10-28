@@ -5,11 +5,14 @@ import './home.css';
 import { Link } from "react-router-dom";
 import { Button, InputGroup } from "@blueprintjs/core";
 import LoginForm from './components/loginform';
+import { appTokenStorage } from "../../helper/tokenstorage";
+import SignIn from "../signin/signin";
+
 
 export default class Home extends React.Component {
 
-    render() {   
-    const is_logged = false;
+    render() {
+      const user = appTokenStorage.user;
 
       return (
         <div className="App">
@@ -22,16 +25,23 @@ export default class Home extends React.Component {
             <Link to="/learn" className="learn">
                 <h3>Learn about anatomy</h3>
             </Link>
+            { !user && 
+                <div className="signin">
+                    <SignIn></SignIn>
+                </div>
+            }
+            { user && 
               <Link to="contribute" className="contribute">
                 <h3>Manual Labeling</h3>
             </Link>
-            { !is_logged && 
-            <Link to="signin" className="signin">
-                <h3>Sign in</h3>
-            </Link>
+            }
+            { user && 
+            <div className="userinfos">
+                <p>Username: {user.username}</p>
+                <Link to="signout">Log out</Link>
+            </div>
             }
           </nav>
-
         </header>
       </div>
     );}

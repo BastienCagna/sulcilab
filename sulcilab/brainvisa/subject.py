@@ -50,8 +50,10 @@ class PSubjectBase(BaseModel):
     database_id: int
     center: str
     name: str
-    species: "PSpecies"
+    species: "PSpecies" = None
     graphs: List = []
+    class Config:
+        orm_mode = True
 class PSubjectCreate(PSubjectBase):
     pass
 class PSubject(PSubjectBase, SulciLabReadingModel):

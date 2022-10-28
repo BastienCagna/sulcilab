@@ -3,3 +3,10 @@
     width: 50%;
     min-width: 40em;
 }
+
+
+.row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}

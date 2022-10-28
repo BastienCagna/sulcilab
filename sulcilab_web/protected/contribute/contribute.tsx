@@ -4,9 +4,11 @@ import './contribute.css';
 import SubjectList from './components/subjectlist';
 import { count } from "console";
 import { Link } from "react-router-dom";
-import { Button, ControlGroup, InputGroup, MenuItem } from "@blueprintjs/core"
+import { Button, ControlGroup, InputGroup, MenuItem, Spinner } from "@blueprintjs/core"
 import { Select2, ICreateNewItem, ItemPredicate } from "@blueprintjs/select";
 
+import { DatabasesService, PDatabase, PSubject } from "../../api";
+import ProtectedComponent from "../protectedcomponent";
 
 
 const databases = [
@@ -33,7 +35,7 @@ interface Subject {
     labelingsets: []
 }
 
-const DatabaseSelect = Select2.ofType<Database>();
+const DatabaseSelect = Select2.ofType<PDatabase>();
 
 function filterDatabase(query: string, database: Database, _index:any, exactMatch:any):  boolean {
     const normalizedTitle = database.name.toLowerCase();
@@ -46,10 +48,11 @@ function filterDatabase(query: string, database: Database, _index:any, exactMatc
     }
 };
 
-function filterSubject(query: string, subject: Subject, database: Database|null) {
-    if(database && database.id && subject.database.id !== database.id) {
+function filterSubject(query: string, subject: PSubject, database: Database|null) {
+    /*if(database && database.id && subject.database_id !== database.id) {
         return false;
-    }
+    }*/
+    
     let subjectStr = `${subject.name} ${database ? database.name: ''}`.toLowerCase();
     // subject.labelingsets.forEach(set => {
     //     subjectStr += ` ${set.name} ${set.hemisphere}`
@@ -59,31 +62,55 @@ function filterSubject(query: string, subject: Subject, database: Database|null)
 }
 
 
-export default class Contribute extends React.Component {
+export default class Contribute extends ProtectedComponent {
     constructor(props: any) {
         super(props);
+        this.reset();
+    }
+
+    reset() {
         this.state = {
-            databases: databases,
-            selectedDatabase: databases[0],
-            subjects: subjects,
-            selectedSubjects: subjects,
+            isLoadingDatabases: false,
+            databases: [],
+            selectedDatabase: null,
+            subjects: [],
+            selectedSubjects: [],
             query: ''
         };
-        //this.api = 
     }
 
-    loadDatabases() {
-
+    async loadDatabases() {
+        this.setState({isLoadingDatabases: true});
+        const databases = await DatabasesService.databasesRead();
+        this.setState({databases: databases});
+        if(!this.selectedDatabase && databases.length > 0) {
+            this.changeDatabase(databases[0], false);
+        }
+        this.setState({isLoadingDatabases: false});
     }
+
+    // async setSelectedDatabase(db: PDatabase) {
+    //     this.setState({selectedDatabase: db});
+    //     this.filterSubjects();
+    // }
+
+    componentDidMount() {
+        this.loadDatabases();
+    }
+
 
     filterSubjects = () => {
-        console.log("database:", this.state.selectedDatabase);
-        console.log('query:', this.state.query);
-        this.setState({selectedSubjects: this.state.subjects.filter((subject) => {return filterSubject(this.state.query, subject, this.state.selectedDatabase)})})
+        // console.log("database:", this.state.selectedDatabase);
+        // console.log('query:', this.state.query);
+        this.setState({
+            subjects: this.state.selectedDatabase.subjects.filter((subject) => {
+                return filterSubject(this.state.query, subject, this.state.selectedDatabase)
+            })
+        })
     };
 
-    changeDatabase = (db: Database | ICreateNewItem | null, isCreateNewItem: boolean) => {
-        this.setState({database: db});
+    async changeDatabase(db: PDatabase | ICreateNewItem | null, isCreateNewItem: boolean) {
+        this.setState({selectedDatabase: db});
         this.filterSubjects();
     };
 
@@ -93,7 +120,7 @@ export default class Contribute extends React.Component {
     }
 
     render() { 
-        const nSubs = this.state.selectedSubjects.length;
+        const nSubs = this.state.subjects.length;
 
         return (
         <div className="App">
@@ -105,25 +132,46 @@ export default class Contribute extends React.Component {
             <div className="sl-box list-control">
                 <form>
                     <ControlGroup>
-                        <DatabaseSelect
-                            items={this.state.databases}
-                            itemPredicate={filterDatabase}
-                            itemRenderer={(item: Database, {handleClick, handleFocus}) => {return (<MenuItem key={item.id} text={item.name} onClick={handleClick} onFocus={handleFocus} />)} }
-                            noResults={<MenuItem disabled={true} text="No results." />}
-                            onItemSelect={this.changeDatabase}
-                            query={this.state.selectedDatabase.id ? this.state.selectedDatabase.name : ""}
-                            //onActiveItemChange={this.changeDatabase}
-                        >
-                            <Button text={this.state.selectedDatabase.name} rightIcon="double-caret-vertical" icon="database"/>
-                        </DatabaseSelect>
+                        { !this.state.isLoadingDatabases &&
+                            <DatabaseSelect
+                                items={this.state.databases}
+                                itemPredicate={filterDatabase}
+                                itemRenderer={(item: Database, {handleClick, handleFocus}) => {return (<MenuItem key={item.id} text={item.name} onClick={handleClick} onFocus={handleFocus} />)} }
+                                noResults={<MenuItem disabled={true} text="No results." />}
+                                onItemSelect={this.changeDatabase}
+                                query={this.state.selectedDatabase ? this.state.selectedDatabase.name : ""}
+                                //onActiveItemChange={this.changeDatabase}
+                            >
+                                { this.state.databases &&
+                                    <Button text={this.state.selectedDatabase ? this.state.selectedDatabase.name: ""} rightIcon="double-caret-vertical" icon="database"/>
+                                }
+                            </DatabaseSelect>
+                        }
                         <InputGroup placeholder="Search..." leftIcon="search" value={this.state.query} onChange={this.queryChanged}/>
                     </ControlGroup>
                 </form>
                 <p style={{textAlign: "right"}}>{nSubs > 1 ? nSubs + ' subjects' : (nSubs === 1 ? '1 subject' : 'No subjects')} </p>
             </div>
-            <ul>
-                <SubjectList subjects={this.state.selectedSubjects} />
-            </ul>
+
+            { this.state.isLoadingDatabases ? (
+                <Spinner></Spinner>
+            ) : (
+                <div className="row">
+                    <div className="contribute-left-column">
+                        { this.state.selectedDatabase ? (
+                            <ul>
+                                <SubjectList subjects={this.state.subjects.length > 0 ? this.state.subjects : this.state.selectedDatabase.subjects} />
+                            </ul>
+                        ) : (
+                            <p>No subjects.</p>
+                        )}
+                    </div>
+                    <div className="contribute-right-column">
+                        <h1>yoyo</h1>
+                        <p>Select a subject</p>
+                    </div>
+                </div>
+            )}
         </div>
     );}
 }

@@ -6,7 +6,7 @@
     "license": "",
     "main": "index.js",
     "scripts": {
-        "api-build": "python sulcilab/build.py",
+        "api-build": "python sulcilab/build.py; rm -rf sulcilab_web/api; cp -r build/api/client sulcilab_web/api; cp sulcilab_web/api_openapi.ts.template sulcilab_web/api/core/OpenAPI.ts; cp sulcilab_web/api_request.ts.template sulcilab_web/api/core/request.ts",
         "build": "npm run api-build & npm run web-build;",
         "web-start": "react-app-rewired start",
         "web-build": "react-app-rewired build",

@@ -26,13 +26,18 @@ class Species(Base, SulciLabBase):
 
     fr_name = Column(String, unique=True, index=True)
     en_name = Column(String, unique=True, index=True)
+    
 
 ##################
 # Pydantic Model #
 ##################
 class PSpeciesBase(BaseModel):
-    fr_name: str
-    en_name: str
+    fr_name: str = ""
+    en_name: str = ""
+
+    class Config:
+        orm_mode = True
+
 class PSpecies(PSpeciesBase, SulciLabReadingModel):
     pass
 

@@ -134,7 +134,7 @@ def read(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), d
     users = crud.get_all(db, User, skip=skip, limit=limit)
     return users
 
-@router.get("/me", dependencies=[Depends(JWTBearer())], response_model=List[PUser])
+@router.get("/me", dependencies=[Depends(JWTBearer())], response_model=PUser)
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     return get_user_by_token(db, token)
 

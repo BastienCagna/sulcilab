@@ -1,13 +1,18 @@
 import React, {useEffect} from "react";
 import './signin.css';
-import { Link } from "react-router-dom";
+import { Link} from "react-router-dom";
 import { Button} from "@blueprintjs/core";
-import { ColorsService } from "../../api";
+import { UsersService } from "../../api/";
+import { appTokenStorage } from "../../helper/tokenstorage";
 
 
 export default class SignIn extends React.Component {
+
     constructor(props: any) {
         super(props);
+        if(appTokenStorage.user) {
+            window.location = '/';
+        }
         this.reset();
     }
   
@@ -19,16 +24,15 @@ export default class SignIn extends React.Component {
         };
     }
 
-
-    async componentDidMount() {
-        // const response = fetch("http://127.0.0.1:8000/color/all");
-        // console.log(response);
-        let response = await ColorsService.colorsRead();
-        console.log(response);
-    }  
-
-    signin() {
-        console.log("coucou ", this.state.username);
+    async signin() {
+        let response = await UsersService.usersLogin({
+            email: this.state.username,
+            password: this.state.password
+        });
+        if(response.token) {
+            await appTokenStorage.setToken(response.token);
+            window.location = '/';
+        }
     }
 
     render() { return (
@@ -42,7 +46,6 @@ export default class SignIn extends React.Component {
             </div>
             <div className="form-item">
                 <label></label>
-                <Button className='back-btn'><Link to="/">{'< Back'}</Link></Button>
                 <Button className="submit" onClick={evt => this.signin()}>Sign in</Button>
                 <a href="">Create a new account</a>
             </div>
