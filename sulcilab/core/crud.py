@@ -12,8 +12,10 @@ def get_all(db: Session, model:SulciLabBase, skip: int = 0, limit: int = 100):
 def get(db: Session, model:SulciLabBase, id: int):
     return db.query(model).filter(model.id == id).first()
 
-def get_by(db: Session, model:SulciLabBase, **filters):
-    query = db.query(model)
+def get_by(db: Session, model:SulciLabBase, skip: int = 0, limit: int = 100, **filters):
+    query = db.query(model).offset(skip)
+    if limit:
+        query = query.limit(limit)
     query = query.filter(and_(getattr(model, field) == value for field, value in filters.items()))
     # for k, v in kwargs.items():
     #     query.filter(getattr(model, k) == v)

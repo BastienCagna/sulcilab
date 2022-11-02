@@ -30,7 +30,7 @@ class PFoldBase(BaseModel):
 class PFoldCreate(PFoldBase):
     pass
 class PFold(PFoldBase, SulciLabReadingModel):
-    graph: 'PGraph'
+    #graph: 'PGraph'
     pass
 
 

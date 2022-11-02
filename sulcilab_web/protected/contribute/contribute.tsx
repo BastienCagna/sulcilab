@@ -1,14 +1,14 @@
 import React from "react";
 import './contribute.css';
 
-import SubjectList from './components/subjectlist';
-import { count } from "console";
 import { Link } from "react-router-dom";
 import { Button, ControlGroup, InputGroup, MenuItem, Spinner } from "@blueprintjs/core"
 import { Select2, ICreateNewItem, ItemPredicate } from "@blueprintjs/select";
 
 import { DatabasesService, PDatabase, PSubject } from "../../api";
 import ProtectedComponent from "../protectedcomponent";
+import SubjectList from './components/subjectlist';
+import SubjectView from './components/subjectview';
 
 
 const databases = [
@@ -75,7 +75,8 @@ export default class Contribute extends ProtectedComponent {
             selectedDatabase: null,
             subjects: [],
             selectedSubjects: [],
-            query: ''
+            query: '',
+            currentSubject: null
         };
     }
 
@@ -102,11 +103,13 @@ export default class Contribute extends ProtectedComponent {
     filterSubjects = () => {
         // console.log("database:", this.state.selectedDatabase);
         // console.log('query:', this.state.query);
-        this.setState({
-            subjects: this.state.selectedDatabase.subjects.filter((subject) => {
-                return filterSubject(this.state.query, subject, this.state.selectedDatabase)
+        if(this.state.selectedDatabase) {
+            this.setState({
+                subjects: this.state.selectedDatabase.subjects.filter((subject) => {
+                    return filterSubject(this.state.query, subject, this.state.selectedDatabase)
+                })
             })
-        })
+        }
     };
 
     async changeDatabase(db: PDatabase | ICreateNewItem | null, isCreateNewItem: boolean) {
@@ -117,6 +120,10 @@ export default class Contribute extends ProtectedComponent {
     queryChanged = (event: any) => {
         this.setState({query: event.target.value});
         this.filterSubjects();
+    }
+
+    handleSelectSubject = (subject: PSubject) => {
+        this.setState({currentSubject: subject});
     }
 
     render() { 
@@ -160,15 +167,14 @@ export default class Contribute extends ProtectedComponent {
                     <div className="contribute-left-column">
                         { this.state.selectedDatabase ? (
                             <ul>
-                                <SubjectList subjects={this.state.subjects.length > 0 ? this.state.subjects : this.state.selectedDatabase.subjects} />
+                                <SubjectList subjects={this.state.subjects.length > 0 ? this.state.subjects : this.state.selectedDatabase.subjects} onSelectSubject={this.handleSelectSubject}/>
                             </ul>
                         ) : (
                             <p>No subjects.</p>
                         )}
                     </div>
                     <div className="contribute-right-column">
-                        <h1>yoyo</h1>
-                        <p>Select a subject</p>
+                        <SubjectView user={this.user} subject={this.state.currentSubject}></SubjectView>
                     </div>
                 </div>
             )}

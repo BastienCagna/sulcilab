@@ -1,17 +1,18 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
+from sqlalchemy import Column, ForeignKey, Integer, Text
 from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Union
 from pydantic import BaseModel
 import os.path as op
+from sulcilab.brainvisa.subject import Subject
 
 from sulcilab.utils.io import check_dir, read_arg, write_arg
 from sulcilab.auth.auth_bearer import JWTBearer
-from sulcilab.database import SulciLabBase, Base, SessionLocal, get_db
+from sulcilab.database import SulciLabBase, Base, get_db
 from sulcilab.core import crud
 from sulcilab.core.schemas import SulciLabReadingModel
 from sulcilab.core.user import PUser, User, get_user_by_token, oauth2_scheme
-from sulcilab.brainvisa import nomenclature
+from sulcilab.utils.misc import filt_keys, sqlalchemy_to_pydantic_instance
 
 
 DEFAULT_OUTPUT_DATABASE_PATH = op.join(op.split(__file__)[0], "..", "..", "working_database")
@@ -74,14 +75,15 @@ class PLabelingSetBase(BaseModel):
     author_id: int
     graph_id: int
     nomenclature_id: int
-    labelings: List["PLabeling"] = []
     comment: Union[str, None] = ""
 class PLabelingSetCreate(PLabelingSetBase):
     pass
-class PLabelingSet(PLabelingSetBase, SulciLabReadingModel):
+class PLabelingSetWithoutLabelings(PLabelingSetBase, SulciLabReadingModel):
     author: 'PUserBase'
     graph: "PGraph"
     nomenclature: "PNomenclature"
+class PLabelingSet(PLabelingSetWithoutLabelings):
+    labelings: List["PLabeling"] = []
 
 class PLabelingSetShort(BaseModel):
     author_id: int
@@ -93,8 +95,9 @@ from sulcilab.core.user import PUserBase, get_user_by_token
 from .nomenclature import PNomenclature
 from .graph import PGraph
 from .labeling import PLabeling
-PLabelingSetBase.update_forward_refs()
 PLabelingSet.update_forward_refs()
+PLabelingSetWithoutLabelings.update_forward_refs()
+
 ###################
 # CRUD Operations #
 ###################
@@ -107,48 +110,65 @@ router = APIRouter()
 
 @router.get("/all", response_model=List[PLabelingSet])
 def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # user = get_current_user(db, token)
     return crud.get_all(db, LabelingSet, skip=skip, limit=limit)
 
+@router.get("/usersubject", dependencies=[Depends(JWTBearer())], response_model=List[PLabelingSetWithoutLabelings])
+def get_labelingsets_of_user_for_a_subject(user_id: int, sub_id: int, skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    cuser = get_user_by_token(db, token)
+    user = crud.get(db, User, user_id)
+    if user.id != cuser.id and not cuser.is_admin:
+        raise HTTPException(status_code=403, detail="Only admin can list labelings set of an other user.")
+    sub = crud.get(db, Subject, sub_id)
 
-@router.post("/new", dependencies=[Depends(JWTBearer())], response_model=PLabelingSet)
-def new_labelingset(item:PLabelingSetCreate, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    user: PUser = get_user_by_token(db, token)
-
-    if item.author_id != user.id and not user.is_admin:
-        raise HTTPException(status_code=403, detail="Only admin can create labeling set for an other user.")
-    if len(item.labelings) > 0:
-        raise HTTPException(status_code=403, detail="New labeling set is expected to be empty.")
-
-    return crud.create(db, LabelingSet,
-        author_id=item.author_id, 
-        graph_id=item.graph_id, 
-        nomenclature_id=item.nomenclature_id
-    )
-
-
-@router.post("/save", dependencies=[Depends(JWTBearer())], response_model=PLabelingSet)
-def save_labelingset(item:PLabelingSet, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    user: PUser = get_user_by_token(db, token)
-
-    if item.author_id != user.id and not user.is_admin:
-        raise HTTPException(status_code=403, detail="Only admin can modify labeling set for an other user.")
-
-    return crud.update(db, LabelingSet,
-        id=item.id,
-        author_id=item.author_id, 
-        graph_id=item.graph_id, 
-        nomenclature_id=item.nomenclature_id#,
-        #labelings=item.labelings cause problems if empty list
-    )
-
-
-
-@router.delete("/del", dependencies=[Depends(JWTBearer())], response_model=PLabelingSet)
-def delete_labelingset(item:PLabelingSetCreate, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    user: PUser = get_user_by_token(db, token)
+    gids = list(g.id for g in sub.graphs)
+    query = db.query(LabelingSet).filter(LabelingSet.graph_id.in_(gids)).offset(skip)
+    if limit:
+        query = query.limit(limit)
     
-    if item.author_id != user.id and not user.is_admin:
-        raise HTTPException(status_code=403, detail="Only admin can delete labeling set for an other user.")
+    return sqlalchemy_to_pydantic_instance(query.all(), PLabelingSetWithoutLabelings)
 
-    return crud.delete(db, LabelingSet, item.id)
+
+# FIXME: Following functions failed to generate API description 
+# (probably due to bad matching between oupt and response_models or input pydantic models)
+
+# @router.post("/new", dependencies=[Depends(JWTBearer())], response_model=PLabelingSet)
+# def new_labelingset(item:PLabelingSetCreate, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+#     user: PUser = get_user_by_token(db, token)
+
+#     if item.author_id != user.id and not user.is_admin:
+#         raise HTTPException(status_code=403, detail="Only admin can create labeling set for an other user.")
+#     if len(item.labelings) > 0:
+#         raise HTTPException(status_code=403, detail="New labeling set is expected to be empty.")
+
+#     return crud.create(db, LabelingSet,
+#         author_id=item.author_id, 
+#         graph_id=item.graph_id, 
+#         nomenclature_id=item.nomenclature_id
+#     )
+
+
+# @router.post("/save", dependencies=[Depends(JWTBearer())], response_model=PLabelingSet)
+# def save_labelingset(item:PLabelingSet, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+#     user: PUser = get_user_by_token(db, token)
+
+#     if item.author_id != user.id and not user.is_admin:
+#         raise HTTPException(status_code=403, detail="Only admin can modify labeling set for an other user.")
+
+#     return crud.update(db, LabelingSet,
+#         id=item.id,
+#         author_id=item.author_id, 
+#         graph_id=item.graph_id, 
+#         nomenclature_id=item.nomenclature_id#,
+#         #labelings=item.labelings cause problems if empty list
+#     )
+
+# @router.delete("/del", dependencies=[Depends(JWTBearer())], response_model=PLabelingSet)
+# def delete_labelingset(item:PLabelingSetCreate, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+#     user: PUser = get_user_by_token(db, token)
+    
+#     if item.author_id != user.id and not user.is_admin:
+#         raise HTTPException(status_code=403, detail="Only admin can delete labeling set for an other user.")
+
+#     item = crud.get(db, LabelingSet, item.id)
+#     crud.delete(db, LabelingSet, item.id)
+#     return item

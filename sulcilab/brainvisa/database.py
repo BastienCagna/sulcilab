@@ -34,11 +34,11 @@ class PDatabaseBase(BaseModel):
 class PDatabaseCreate(PDatabaseBase):
     pass
 class PDatabase(PDatabaseBase, SulciLabReadingModel):
-    subjects: List['PSubjectBase'] = []
+    subjects: List['PSubject'] = []
 
 
 
-from .subject import PSubjectBase
+from .subject import PSubject
 PDatabase.update_forward_refs()
 ###################
 # CRUD Operations #

@@ -7,7 +7,7 @@ import { RenderPass } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/
 import { OutlinePass } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/postprocessing/OutlinePass';
 import { ShaderPass } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/postprocessing/ShaderPass';
 import { FXAAShader } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/shaders/FXAAShader';
-import { listChildren } from './utils.js';
+// import { listChildren } from './utils.js';
 
 
 export const PointOfView = { 
@@ -206,7 +206,7 @@ export class Viewer {
         if (metadata) {
             mesh.userData = metadata;
             if (metadata.name)
-                mesh.name = id;
+                mesh.name = metadata.name;
         }
 
         mesh.rotateZ(3.14 / 2);
@@ -226,9 +226,9 @@ export class Viewer {
         }
     }
 
-    allObjects() {
-        return listChildren(this.scene).slice(1);
-    }
+    // allObjects() {
+    //     return listChildren(this.scene).slice(1);
+    // }
     getObjectById(id) {
         return this.scene.getObjectById(id);
     }

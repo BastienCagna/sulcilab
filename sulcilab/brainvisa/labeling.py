@@ -20,7 +20,7 @@ class Labeling(Base, SulciLabBase):
 
     fold_id = Column(Integer, ForeignKey("folds.id"))
     fold = relationship("Fold", uselist=False,)  # , back_populates="")
-    label_id = Column(Integer, ForeignKey("labels.id"))
+    label_id = Column(Integer, ForeignKey("labels.id"), nullable=True)
     label = relationship("Label", uselist=False)
     labelingset_id = Column(Integer, ForeignKey("labelingsets.id"))
     labelingset = relationship(
@@ -39,7 +39,7 @@ class Labeling(Base, SulciLabBase):
 
 class PLabelingBase(BaseModel):
     fold_id: int
-    label_id: int
+    label_id: Union[int, None]
     labelingset_id: int
     rate: Union[float, None]
     comment: Union[str, None]
@@ -51,7 +51,7 @@ class PLabelingCreate(PLabelingBase):
 
 class PLabeling(PLabelingBase, SulciLabReadingModel):
     fold: PFold
-    label: PLabel
+    label: Union[PLabel, None]
     iterations: int
 
 

@@ -4,7 +4,7 @@ import './edit.css';
 import { Link } from "react-router-dom";
 import { Button, InputGroup } from "@blueprintjs/core";
 
-import Editor from "../../components/editor";
+import Editor from "./components/editor";
 
 export default class Edit extends React.Component {
     constructor(props: any) {

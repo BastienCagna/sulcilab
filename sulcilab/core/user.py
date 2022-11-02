@@ -9,7 +9,7 @@ from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
 from sulcilab.core.schemas import SulciLabReadingModel
 from sulcilab.auth.auth_bearer import JWTBearer
-from sulcilab.auth.auth_handler import signJWT, get_current_user
+from sulcilab.auth.auth_handler import decodeJWT, signJWT
 from sulcilab.core.jwt import PJWT
 import jwt
 import typing
@@ -64,6 +64,7 @@ class PUser(PUserBase, SulciLabReadingModel):
 
 # from sulcilab.brainvisa.labelingset import PLabelingSet
 PUser.update_forward_refs()
+
 
 ###################
 # CRUD Operations #

@@ -57,7 +57,8 @@ class PSubjectBase(BaseModel):
 class PSubjectCreate(PSubjectBase):
     pass
 class PSubject(PSubjectBase, SulciLabReadingModel):
-    database: "PDatabase"
+    #database: "PDatabase"
+    pass
 
 
 from .database import PDatabase

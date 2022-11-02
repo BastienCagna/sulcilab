@@ -13,7 +13,11 @@ export default class SubjectCard extends React.Component {
         this.state = {open: false};
     }
 
-    handleClick = () => {  this.setState({open: !this.state.open}); };
+    handleClick = () => {  
+        this.setState({open: !this.state.open});
+        if(this.props.onClick)
+            this.props.onClick(this.subject);
+    };
 
     render() {
         const sub = this.subject;
@@ -27,7 +31,7 @@ export default class SubjectCard extends React.Component {
             <div>
                 <div className="subject-card" onClick={this.handleClick}>
                     {/* <h5>{sub.database.name}</h5> */}
-                    <h4>{sub.name}</h4>
+                    <p>{sub.name}</p>
                 </div> 
 
                 { open &&

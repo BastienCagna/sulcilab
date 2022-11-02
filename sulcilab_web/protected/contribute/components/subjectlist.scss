@@ -1,10 +1,9 @@
 .subject-list {
-    display: flex;
-    flex-wrap: wrap;
+    display: block;
 }
 
 .subject-card-item {
-    display: inline-block;
-    margin: 1em;
+    display: block;
+    margin: 0em;
     padding: 0px;
 }

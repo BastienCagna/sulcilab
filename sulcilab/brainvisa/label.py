@@ -58,7 +58,7 @@ class PLabelCreate(PLabelBase):
     pass
 class PLabel(PLabelBase, SulciLabReadingModel):
     parent: 'PLabel'
-    nomenclature: 'PNomenclature'
+    # nomenclature: 'PNomenclature'
     color: 'PColor'
 
 from .nomenclature import PNomenclature

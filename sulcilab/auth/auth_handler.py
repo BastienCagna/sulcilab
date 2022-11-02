@@ -37,7 +37,3 @@ def decodeJWT(token: str) -> dict:
         return decoded_token if decoded_token["expiration"] >= time.time() else None
     except:
         return {}
-
-def get_current_user(db: Session, jwtoken: str = Depends()):
-    payload = decodeJWT(jwtoken)
-    return crud.get_one_by(db, User, id=payload['id'], email=payload['email'], username=payload['username'])

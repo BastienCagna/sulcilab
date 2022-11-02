@@ -10,6 +10,7 @@ from sulcilab.core.schemas import SulciLabReadingModel
 import os.path as op
 import enum
 
+import nibabel as nb
 # from .subject import PSubject
 # from .fold import PFold
 
@@ -78,12 +79,20 @@ class PGraphBase(BaseModel):
 class PGraphCreate(PGraphBase):
     pass
 class PGraph(PGraphBase, SulciLabReadingModel):
-    subject: "PSubject"
+    # subject: "PSubject"
     folds: "List[PFold]"
 
-from .subject import PSubject
+
+class PMeshData(BaseModel):
+    type: str
+    triangles: list
+    vertices: list
+
+
+# from .subject import PSubject
 from .fold import PFold
 PGraph.update_forward_refs()
+
 ###################
 # CRUD Operations #
 ###################
@@ -96,5 +105,17 @@ router = APIRouter()
 
 @router.get("/all", response_model=List[PGraph])
 def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # user = get_current_user(db, token)
     return crud.get_all(db, Graph, skip=skip, limit=limit)
+
+
+@router.get("/meshdata", response_model=PMeshData)
+def get_mesh_data(graph_id: int, mtype:str="white", db: Session = Depends(get_db)):
+    print("request mesh data")
+    graph = crud.get(db, Graph, graph_id)
+    gii = nb.load(graph.get_mesh_path(type=mtype))
+    print("send mesh data")
+    return PMeshData(
+        type=mtype,
+        vertices=gii.darrays[0].data.tolist(),
+        triangles=gii.darrays[1].data.tolist()
+    )
