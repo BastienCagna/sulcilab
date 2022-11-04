@@ -28,8 +28,8 @@ class User(Base, SulciLabBase):
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
 
-    labelingsets = relationship("LabelingSet", back_populates="author")
-    sharedsets = relationship("SharedLabelingSet", back_populates="target")
+    # labelingsets = relationship("LabelingSet", back_populates="author")
+    # sharedsets = relationship("SharedLabelingSet", back_populates="target")
 
 ###################
 # Pydantic Models #
@@ -56,8 +56,8 @@ class PUserSignIn(BaseModel):
 class PUser(PUserBase, SulciLabReadingModel):
     is_active: bool
     is_admin: bool
-    labelingsets: "List" = []
-    sharedsets: "List" = []
+    # labelingsets: "List" = []
+    # sharedsets: "List" = []
     # TODO: verify if it works properly without the type specification
     # labelingsets: "List[PLabelingSet]" = []
     # sharedsets: "List[PLabelingSet]" = []

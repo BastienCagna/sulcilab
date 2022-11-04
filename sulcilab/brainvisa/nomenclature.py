@@ -7,7 +7,7 @@ from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
 # from sulcilab.core.schemas import SulciLabReadingModel
-
+from sulcilab.brainvisa.label import nomLabelAssociationTable
 
 #############
 # ORM Model #
@@ -17,7 +17,11 @@ class Nomenclature(Base, SulciLabBase):
 
     name = Column(String, unique=True)
     default = Column(Boolean, default=False) # replace this by a value in settings and provide the suited controller
-    labels = relationship("Label", back_populates="nomenclature")
+    
+    # labels_id = Column(Integer, ForeignKey("labels.id"))
+    # labels = relationship("Label", backref="nomenclatures")
+    # labels = relationship("Label", backref="nomenclatures", uselist=True)
+    labels = relationship("Label", secondary=nomLabelAssociationTable, backref="nomenclatures", uselist=True)
 
     def __str__(self) -> str:
         return "Nomenclature#{}: {}".format(self.id, self.name)

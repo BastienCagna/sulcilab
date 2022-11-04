@@ -37,7 +37,14 @@ def import_graph(arg_file: str, db,
         version=GraphVersion(version),
         session=session
     )
-    labelset = crud.create(db, LabelingSet, author=author, graph=graph, nomenclature=nomenclature)
+
+    labelset = crud.create(db, LabelingSet, author_id=author.id, graph=graph, nomenclature=nomenclature)
+
+    tmp = list(filter(lambda label: label.shortname == "unknown", list(nomenclature.labels)))
+    if len(tmp) == 0:
+        raise RuntimeError("No unknown label")
+    unknown_label = tmp[0]
+
     missing_labels = set()
     for v in nodes:
         if 'name' in v.keys():
@@ -47,14 +54,21 @@ def import_graph(arg_file: str, db,
             fold = crud.create(db, Fold, graph=graph, vertex=v['index'])
             try:
                 if left and right:
-                    label = crud.get_one_by(db, Label, shortname=lname, left=left, right=right, nomenclature=nomenclature)
+                    labels = crud.get_by(db, Label, shortname=lname, left=left, right=right)
                 elif left:
-                    label = crud.get_one_by(db, Label, shortname=lname, left=left, nomenclature=nomenclature)
-                elif right:
-                    label = crud.get_one_by(db, Label, shortname=lname, right=right, nomenclature=nomenclature)
+                    labels = crud.get_by(db, Label, shortname=lname, left=left)
+                else: # = elif right:
+                    labels = crud.get_by(db, Label, shortname=lname, right=right)
+                found = False
+                for label in labels:
+                    if nomenclature in label.nomenclatures:
+                        found = True
+                        break
+                if not found:
+                    raise RuntimeError("unknown label")
             except:
                 missing_labels.add(lname)
-                label = crud.get_one_by(db, Label, shortname="unknown", nomenclature_id=nomenclature.id)
+                label = unknown_label
             crud.create(db, Labeling, fold=fold, label=label, labelingset=labelset)
     return graph, labelset, missing_labels
 
@@ -92,7 +106,7 @@ def import_db(path, name, fr_spe, acq, ana, version, graph_sess, nom_name, verbo
         print('Scanning the subjects...')
     r = 0
     missing_labels = set()
-    for sub in tqdm(list(sorted(subjects))):
+    for sub in tqdm(list(sorted(subjects[:2]))):
         for h in ['L', 'R']:
             graph_f = None
             for center in centers:

@@ -18,6 +18,6 @@ export default class SubjectList extends React.Component {
 
     render() {
         const listItems = this.subjects.map((subject) => <li className="subject-card-item" key={subject.id}><SubjectCard subject={subject} onClick={this.handleSelectSubject} ></SubjectCard></li> );  
-        return ( <ul className="subject-list">{listItems}</ul> );
+        return ( <ul>{listItems}</ul> );
     }
 }

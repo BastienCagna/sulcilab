@@ -16,3 +16,5 @@ sulcilab_web/api
 
 *.css
 *.css.map
+
+tmp/

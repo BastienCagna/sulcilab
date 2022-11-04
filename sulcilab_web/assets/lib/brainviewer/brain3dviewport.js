@@ -7,27 +7,44 @@ import { RenderPass } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/
 import { OutlinePass } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/postprocessing/OutlinePass';
 import { ShaderPass } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/postprocessing/ShaderPass';
 import { FXAAShader } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/shaders/FXAAShader';
-// import { listChildren } from './utils.js';
 
 
-function listChildren(item) {
-    let children = [item];
-    
-    item.children.forEach(element => {
-        children = children.concat(listChildren(element))
-    });
-    return children;
-}
+export class Brain3DViewport {
+    /*
 
+        Attributes
+        ==========
+        parent:
+        width:
+        height:
+        domElement:
+        legendDomElement:
 
-export const PointOfView = { 
-    "FrontToBack": [120, 40, 0],
-    "LeftToRight": [10, 0, 60],
-    "RightToLeft": [10, 0, -60]
-};
+        scene:
+        camera:
+        raycaster:
+        renderer:
+        offset:
+        controls:
+        grid:
+        composer:
+        outlinePass:
+        animate:
+        camRotationSpeed:
+        angle:
 
-export class Viewer {
-    mouse = new THREE.Vector2();
+        objects:
+        slaves:
+
+        onClickCallBack:
+        onDoubleClickCallBack:
+        onFrameCallBack:
+
+        mouse:
+        clickDownX:
+        clickDownY:
+
+    */
     // Animation
     camRotationSpeed = 0.;
     angle = 0.;
@@ -39,21 +56,15 @@ export class Viewer {
     onDoubleClickCallBack = null;
     onFrameCallBack = null;
 
+    mouse = new THREE.Vector2();
     clickDownX = null;
     clickDownY = null;
 
     /**
-     * Init a 3D view.
-     * Create a toolbar containing a 3DViewWidget and a 3DObjectWidget to manage the rendering of objects.
-     * Then, create the ThreeJS scene with lights, camera, control, helper and renderer
-     * @param parent
-     * @param title
-     * @param width
-     * @param height
+     * Init a 3D view
      */
     constructor(parent, domElementId, width, height) {
         this.parent = parent;
-        this.type = "3D";
         this.width = width;
         this.height = height;
         this.domElement = document.getElementById(domElementId);
@@ -167,18 +178,6 @@ export class Viewer {
         this.controls.addEventListener('change', this.onPositionChange.bind(this));
     }
 
-    reset() {
-        this.allObjects().forEach(obj => {
-            if(obj.type == "Mesh") {
-                obj.geometry.dispose()
-                obj.material.dispose()
-                this.scene.remove(obj);
-            }
-        });
-        this.offset = new THREE.Vector3(0, 0, 0);
-        this.resetCamera();   
-    }
-
     addSlave(slave) {
         this.slaves.push(slave);
         // slave.controls = this.controls;
@@ -248,9 +247,9 @@ export class Viewer {
         }
     }
 
-    allObjects() {
-        return listChildren(this.scene).slice(1);
-    }
+    // allObjects() {
+    //     return listChildren(this.scene).slice(1);
+    // }
     getObjectById(id) {
         return this.scene.getObjectById(id);
     }
@@ -265,7 +264,7 @@ export class Viewer {
     }
     resetCamera() {
         // this.setCameraPosition(120, 40, 0);
-        this.setCameraPosition(4, 0, 100);
+        this.setCameraPosition(10, 0, 60);
     }
     setCameraPosition(x, y, z) {
         this.camera.position.x = x;
@@ -393,19 +392,11 @@ export class Viewer {
     }
 
     onPositionChange(o) {
-        let slaves = null;
         if(this.slaves.length) {
             for(let s=0; s < this.slaves.length; s++) {
                 this.slaves[s].camera.copy(this.camera);
-                // if(this.slaves[s].slaves.length) {
-                //     slaves = this.slaves[s].slaves;
-                //     this.slaves[s].slaves = [];
-                // }
                 this.slaves[s].controls.target = this.controls.target;
                 this.slaves[s].controls.update();
-                // if(slaves) {
-                //     this.slaves[s].slaves = slaves;
-                // }
             }
 
         }

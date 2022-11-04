@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
 from sqlalchemy.orm import Session, relationship
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from typing import List, Union
 from pydantic import BaseModel
 from sulcilab.database import SulciLabBase, Base
@@ -9,6 +9,7 @@ from sulcilab.database import SessionLocal, get_db
 from sulcilab.core.schemas import SulciLabReadingModel
 import os.path as op
 import enum
+import ujson
 
 import nibabel as nb
 # from .subject import PSubject
@@ -65,6 +66,28 @@ class Graph(Base, SulciLabBase):
         else:
             return op.join(v_path, self.session, "{}{}_{}.arg".format(self.hemisphere.value, self.subject.name, self.session))
 
+    def get_folds_meshes_path(self):
+        data_path = self.get_path()[:-4] + '.data'
+        return op.join(data_path, "aims_Tmtktri.gii")
+
+    def load_mesh(self, type="white"):
+        gii = nb.load(self.get_mesh_path(type=type))
+        return {
+            'type': type,
+            'vertices': gii.darrays[0].data.tolist(),
+            'triangles': gii.darrays[1].data.tolist()
+        }
+
+    def load_folds_meshes(self):
+        gii = nb.load(self.get_folds_meshes_path())
+        data = []
+        for f in range(0, len(gii.darrays), 2):
+            data.append({
+                'type': 'fold',
+                'vertices': gii.darrays[f].data.tolist(),
+                'triangles': gii.darrays[f+1].data.tolist()
+            })
+        return data
 
 ##################
 # Pydantic Model #
@@ -73,13 +96,13 @@ class PGraphBase(BaseModel):
     subject_id: int
     acquisition: str
     analysis: str
-    hemisphere: str
-    version: str
+    hemisphere: Union[str, Hemisphere]
+    version: Union[str, GraphVersion]
     session: Union[str, None]
 class PGraphCreate(PGraphBase):
     pass
 class PGraph(PGraphBase, SulciLabReadingModel):
-    # subject: "PSubject"
+    subject: "PSubjectBase"
     folds: "List[PFold]"
 
 
@@ -88,11 +111,10 @@ class PMeshData(BaseModel):
     triangles: list
     vertices: list
 
-
-# from .subject import PSubject
+from .subject import PSubjectBase
 from .fold import PFold
 PGraph.update_forward_refs()
-
+PSubjectBase.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################
@@ -108,14 +130,8 @@ def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_all(db, Graph, skip=skip, limit=limit)
 
 
-@router.get("/meshdata", response_model=PMeshData)
+@router.get("/meshdata")
 def get_mesh_data(graph_id: int, mtype:str="white", db: Session = Depends(get_db)):
-    print("request mesh data")
     graph = crud.get(db, Graph, graph_id)
-    gii = nb.load(graph.get_mesh_path(type=mtype))
-    print("send mesh data")
-    return PMeshData(
-        type=mtype,
-        vertices=gii.darrays[0].data.tolist(),
-        triangles=gii.darrays[1].data.tolist()
-    )
+    # src: https://stackoverflow.com/questions/73564771/fastapi-is-very-slow-in-returning-a-large-amount-of-json-data
+    return Response(ujson.dumps(graph.load(mtype)), media_type="application/json")

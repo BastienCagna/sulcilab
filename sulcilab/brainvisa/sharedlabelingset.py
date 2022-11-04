@@ -24,7 +24,7 @@ class SharedLabelingSet(Base, SulciLabBase):
     labelingset_id = Column(Integer, ForeignKey("labelingsets.id"))
     labelingset = relationship("LabelingSet", uselist=False)
     target_id = Column(Integer, ForeignKey("users.id"))
-    target = relationship("User", back_populates="sharedsets", uselist=False)
+    # target = relationship("User", back_populates="sharedsets", uselist=False)
     mode = Column(Enum(SharingMode))
 
 
@@ -33,7 +33,7 @@ class SharedLabelingSet(Base, SulciLabBase):
 ##################
 class PSharedLabelingSetBase(BaseModel):
     labelingset: 'PLabelingSet'
-    target: 'PUser'
+    # target: 'PUser'
     mode: int
 class PSharedLabelingSetCreate(PSharedLabelingSetBase):
     pass

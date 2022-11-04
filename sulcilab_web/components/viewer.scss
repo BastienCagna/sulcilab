@@ -1,0 +1,54 @@
+
+
+.bw-viewer {
+
+    .wb-title {
+        position: absolute;
+        padding: 0.4em;
+        background-color: black;
+        color: white;
+        font-size: large;
+        font-weight: bold;
+    }
+
+}
+
+.bw-toolbar {
+    padding: 3px;
+    background-color: honeydew;
+    text-align: left;
+    height: 30px;
+
+    .bw-infos {
+        float: left;
+        * {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .bw-brand {
+            font-weight: bold;;
+        }
+        span {
+            margin-right: 0.5em;
+        }
+    }
+
+    .bw-controls {
+        float: right;
+    
+        .bw-control{
+            display: inline-block;
+            vertical-align: middle;
+        }
+    }
+}
+
+.bw-grid {
+    border-spacing: 0px;
+    padding: 0px;
+
+    td {
+        margin: 0px;
+        padding: 0px;
+    }
+}

@@ -1,11 +1,12 @@
 from sqlalchemy import Column, ForeignKey, Integer, Text
 from sqlalchemy.orm import Session, relationship
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from typing import List, Union
 from pydantic import BaseModel
 import os.path as op
-from sulcilab.brainvisa.subject import Subject
+import ujson
 
+from sulcilab.brainvisa.subject import PSubject, PSubjectBase, Subject
 from sulcilab.utils.io import check_dir, read_arg, write_arg
 from sulcilab.auth.auth_bearer import JWTBearer
 from sulcilab.database import SulciLabBase, Base, get_db
@@ -24,7 +25,7 @@ class LabelingSet(Base, SulciLabBase):
     __tablename__ = "labelingsets"
 
     author_id = Column(Integer, ForeignKey("users.id"))
-    author = relationship("User", back_populates="labelingsets", uselist=False)
+    # author = relationship("User", back_populates="labelingsets", uselist=False)
     graph_id = Column(Integer, ForeignKey("graphs.id"))
     graph = relationship("Graph", uselist=False)
     nomenclature_id = Column(Integer, ForeignKey("nomenclatures.id"))
@@ -60,7 +61,8 @@ class LabelingSet(Base, SulciLabBase):
         # Save the new graph
         write_arg(out_f, metadata, nodes, edges)
 
-    def get_graph_path(self):        
+    def get_graph_path(self):    
+        # TODO: use graph.get_path() instead
         out_dir = check_dir(op.join(
             DEFAULT_OUTPUT_DATABASE_PATH, "default", self.graph.subject.name, "t1mri", self.graph.acquisition, self.graph.analysis, 
             "folds", self.graph
@@ -79,7 +81,7 @@ class PLabelingSetBase(BaseModel):
 class PLabelingSetCreate(PLabelingSetBase):
     pass
 class PLabelingSetWithoutLabelings(PLabelingSetBase, SulciLabReadingModel):
-    author: 'PUserBase'
+    # author: 'PUserBase'
     graph: "PGraph"
     nomenclature: "PNomenclature"
 class PLabelingSet(PLabelingSetWithoutLabelings):
@@ -126,6 +128,31 @@ def get_labelingsets_of_user_for_a_subject(user_id: int, sub_id: int, skip: int 
         query = query.limit(limit)
     
     return sqlalchemy_to_pydantic_instance(query.all(), PLabelingSetWithoutLabelings)
+
+
+@router.get("/demo", response_model=PLabelingSetWithoutLabelings)
+def get_demo_labelingset(db: Session = Depends(get_db)):
+    lset = crud.get_one_by(db, LabelingSet)
+    if not lset:
+        raise HTTPException(404, "No labeling set in the database.")
+    return sqlalchemy_to_pydantic_instance(lset, PLabelingSetWithoutLabelings)
+
+
+@router.get("/data")
+def get_labelingset_data(lset_id: int, db: Session = Depends(get_db)):
+    # Use the first labeling set for demo
+    lset = crud.get(db, LabelingSet, lset_id)
+    
+    # TODO: verify the access rights!
+
+    return Response(ujson.dumps({
+        'subject': sqlalchemy_to_pydantic_instance(lset.graph.subject, PSubjectBase),
+        'mesh': lset.graph.load_mesh(), 
+        'folds_meshes': lset.graph.load_folds_meshes(),
+        # TODO: split the mesh loading from labelings loading
+        'labelings': sqlalchemy_to_pydantic_instance(lset.labelings, PLabeling), 
+        'nomenclature': sqlalchemy_to_pydantic_instance(lset.nomenclature, PNomenclature)
+    }), media_type="application/json")
 
 
 # FIXME: Following functions failed to generate API description 

@@ -7,6 +7,7 @@ from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import get_db
 from sulcilab.core.schemas import SulciLabReadingModel
+from sulcilab.utils.misc import sqlalchemy_to_pydantic_instance
 
 
 #############
@@ -51,20 +52,22 @@ class PSubjectBase(BaseModel):
     center: str
     name: str
     species: "PSpecies" = None
-    graphs: List = []
     class Config:
         orm_mode = True
 class PSubjectCreate(PSubjectBase):
     pass
 class PSubject(PSubjectBase, SulciLabReadingModel):
+    graphs: List["PGraph"] = []
     #database: "PDatabase"
     pass
 
 
 from .database import PDatabase
 from .species import PSpecies
+from .graph import PGraph
 PSubject.update_forward_refs()
 PSubjectBase.update_forward_refs()
+PGraph.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################
@@ -78,4 +81,4 @@ router = APIRouter()
 @router.get("/all", response_model=List[PSubject])
 def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     # user = get_current_user(db, token)
-    return crud.get_all(db, Subject, skip=skip, limit=limit)
+    return sqlalchemy_to_pydantic_instance(crud.get_all(db, Subject, skip=skip, limit=limit))

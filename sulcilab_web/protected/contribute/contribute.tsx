@@ -2,42 +2,20 @@ import React from "react";
 import './contribute.css';
 
 import { Link } from "react-router-dom";
-import { Button, ControlGroup, InputGroup, MenuItem, Spinner } from "@blueprintjs/core"
+import { Button, Callout, ControlGroup, InputGroup, MenuItem, Spinner } from "@blueprintjs/core"
 import { Select2, ICreateNewItem, ItemPredicate } from "@blueprintjs/select";
 
-import { DatabasesService, PDatabase, PSubject } from "../../api";
+import { DatabasesService, PDatabase, PLabelingSetWithoutLabelings, PSubject } from "../../api";
 import ProtectedComponent from "../protectedcomponent";
 import SubjectList from './components/subjectlist';
 import SubjectView from './components/subjectview';
+import ViewerComponent from "../../components/viewer";
 
 
-const databases = [
-    {id: null, name: "All", path: null},
-    {id: '0', name: "Human", path: "/path/to/human/database"},
-    {id: '1', name: "Macaque", path: "/path/to/macapype/database"},
-    {id: '2', name: "Chimps", path: "/path/to/chimps/database"}
-]
-const subjects = [
-    {id: 0, name: "Aldo", database: databases[0], labelingsets: [{id: "0", name:'Left', hemisphere: "left", completed: 0.8}, {id: "1", name:'Right', hemisphere: "right", completed: 0.75}, {id: "2", name:'Left 2', hemisphere: "left", completed: 0.86}]},
-    {id: 1, name: "Frédéric", database: databases[0], labelingsets: [{id: "3", name:'Left', hemisphere: "left", completed: 0.56}, {id: "4", name:'Right', hemisphere: "right", completed: 0.}]},
-    {id: 2, name: "Alphonse", database: databases[1], labelingsets: [{id: "5", name:'Left', hemisphere: "left", completed: 0.56}]},
-]
-
-interface Database {
-    id: string | null;
-    name: string;
-    path: string | null;
-}
-interface Subject {
-    id: string,
-    name: string,
-    database: Database,
-    labelingsets: []
-}
 
 const DatabaseSelect = Select2.ofType<PDatabase>();
 
-function filterDatabase(query: string, database: Database, _index:any, exactMatch:any):  boolean {
+function filterDatabase(query: string, database: PDatabase, _index:any, exactMatch:any):  boolean {
     const normalizedTitle = database.name.toLowerCase();
     const normalizedQuery = query.toLowerCase();
 
@@ -48,7 +26,7 @@ function filterDatabase(query: string, database: Database, _index:any, exactMatc
     }
 };
 
-function filterSubject(query: string, subject: PSubject, database: Database|null) {
+function filterSubject(query: string, subject: PSubject, database: PDatabase|null) {
     /*if(database && database.id && subject.database_id !== database.id) {
         return false;
     }*/
@@ -76,7 +54,9 @@ export default class Contribute extends ProtectedComponent {
             subjects: [],
             selectedSubjects: [],
             query: '',
-            currentSubject: null
+            currentSubject: null,
+            selectedLabelingSets: [],
+            previewLSet: null
         };
     }
 
@@ -126,19 +106,35 @@ export default class Contribute extends ProtectedComponent {
         this.setState({currentSubject: subject});
     }
 
+    handleSelectLabelingSet(lset: PLabelingSetWithoutLabelings) {
+        const selecteds = this.state.selectedLabelingSets;
+        const idx = selecteds.indexOf(lset);
+        if(idx==-1) {
+            selecteds.push(lset);
+            this.setState({selectedLabelingSets: selecteds})
+        }
+    }
+
+    handleOnPreview(lset: PLabelingSetWithoutLabelings) {
+        this.setState({previewLSet: lset});
+    }
+
     render() { 
         const nSubs = this.state.subjects.length;
-
+        const selectedLSets = this.state.selectedLabelingSets.map(lset => {
+                return <li>{lset.graph.subject.name} / {lset.graph.hemisphere} <Button icon="cross"/> </li>    
+            })
         return (
         <div className="App">
             <Button className='back-btn'><Link to="/">{'< retour'}</Link></Button>
             <header className="App-header">
                 <h1>Sulci Lab</h1>
-                <h2>Subjects</h2>
+                <p>Select one or several labeling sets and open them in the editor.</p>
             </header>
-            <div className="sl-box list-control">
-                <form>
-                    <ControlGroup>
+
+            <div className="app-row page">
+                <section className="app-col-small">
+                    <form className="sl-box">
                         { !this.state.isLoadingDatabases &&
                             <DatabaseSelect
                                 items={this.state.databases}
@@ -155,29 +151,45 @@ export default class Contribute extends ProtectedComponent {
                             </DatabaseSelect>
                         }
                         <InputGroup placeholder="Search..." leftIcon="search" value={this.state.query} onChange={this.queryChanged}/>
-                    </ControlGroup>
-                </form>
-                <p style={{textAlign: "right"}}>{nSubs > 1 ? nSubs + ' subjects' : (nSubs === 1 ? '1 subject' : 'No subjects')} </p>
-            </div>
+                    </form>
+                    <p style={{textAlign: "right"}}>{nSubs > 1 ? nSubs + ' subjects' : (nSubs === 1 ? '1 subject' : 'No subjects')} </p>
+                
+                    { this.state.isLoadingDatabases ? (
+                        <Spinner></Spinner>
+                    ) : (
+                        <div>
+                            { this.state.selectedDatabase ? (
+                                <ul>
+                                    <SubjectList subjects={this.state.subjects.length > 0 ? this.state.subjects : this.state.selectedDatabase.subjects} onSelectSubject={this.handleSelectSubject}/>
+                                </ul>
+                            ) : (
+                                <p>No subjects.</p>
+                            )}
+                        </div>
+                    )}
+                </section>
 
-            { this.state.isLoadingDatabases ? (
-                <Spinner></Spinner>
-            ) : (
-                <div className="row">
-                    <div className="contribute-left-column">
-                        { this.state.selectedDatabase ? (
+
+                <section className="app-col-large">
+                    <SubjectView user={this.user} subject={this.state.currentSubject} 
+                        onPreview={this.handleOnPreview.bind(this)}
+                        onSelect={this.handleSelectLabelingSet.bind(this)}></SubjectView>
+                </section>
+
+                <section className="app-col-medium" style={{'min-width': 490}}>
+                    <ViewerComponent title="Preview" width={480} height={320} lset={this.state.previewLSet}></ViewerComponent>
+                    <Callout>
+                        <div>
+                            <h3>Selection</h3>
                             <ul>
-                                <SubjectList subjects={this.state.subjects.length > 0 ? this.state.subjects : this.state.selectedDatabase.subjects} onSelectSubject={this.handleSelectSubject}/>
+                                {selectedLSets}
                             </ul>
-                        ) : (
-                            <p>No subjects.</p>
-                        )}
-                    </div>
-                    <div className="contribute-right-column">
-                        <SubjectView user={this.user} subject={this.state.currentSubject}></SubjectView>
-                    </div>
-                </div>
-            )}
+                            <Button text="Open in the viewer" intent="primary"></Button>
+                            <Button text="Open in the editor" intent="success"></Button>
+                        </div>
+                    </Callout>
+                </section>
+            </div>
         </div>
     );}
 }

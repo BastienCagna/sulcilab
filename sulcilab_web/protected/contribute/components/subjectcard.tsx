@@ -37,10 +37,10 @@ export default class SubjectCard extends React.Component {
                 { open &&
                     <div className="subject-popover">
                         {/* <ul className="labelingsets">{items}</ul> */}
-                        <ButtonGroup>
+                        {/* <ButtonGroup>
                             <Button text="Left" icon="add" small={true}/>
                             <Button text="Right" rightIcon="add" small={true} />
-                        </ButtonGroup>
+                        </ButtonGroup> */}
                     </div>
                 }
             </div>

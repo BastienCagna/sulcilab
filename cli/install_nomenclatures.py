@@ -12,6 +12,7 @@
 # from django.core.management.base import BaseCommand, CommandError
 # from sulcilab.brainvisa import Nomenclature, Color, Label
 import pandas as pd
+#  from sulcilab.brainvisa.label import NomLabelAssociation
 from sulcilab.utils.misc import split_label_name
 import numpy as np
 import argparse
@@ -48,11 +49,10 @@ def list_names_and_colors(nom_node, parent=None):
 def main(csv_f, nom_f):
     db = SessionLocal()
 
-    # Read the laels infos (.csv file)
+    # Read the labels infos (.csv file)
     labels = pd.read_csv(csv_f)
 
     # Read the nomenclature file that should contain all the labels
-    # hnames, colors, parents = list_names_and_colors(aims.read(nom_f))
     hnames, colors, parents = read_hie(nom_f, flatten=True)
 
     # Split each name in name + hemi
@@ -94,8 +94,11 @@ def main(csv_f, nom_f):
             hemi = hemis[ln]
             color = lcolors[colors[ln]]
 
+        # If the label as already been added, skip
         if name in added_labels.keys():
             continue
+
+        # Infer in which hemisphere the label is used (left, right or both)
         if hemi == "L":
             left = True
             right = ((name +"_right") in hnames) or ((name +"._right") in hnames)
@@ -106,7 +109,8 @@ def main(csv_f, nom_f):
             left = True
             right = True
 
-        label = crud.create(db, Label,# Label.objects.create(
+        # Create the label
+        label = crud.create(db, Label,
             shortname=shortname, 
             left=left, 
             right=right, 
@@ -119,17 +123,33 @@ def main(csv_f, nom_f):
         added_labels[name] = (ln, label)
 
         # Then add the label to nomenclatures that it belongs to
-        # for nom in nomenclatures.values():
-            # # self.stdout.write("Does {} ({}) is in {}?".format(label.shortname, l, nom.name))
-            # # self.stdout.write("\t{}".format(labels[l][nom.name]))
-            # if labels[nom.name][l] in ['x', 1, True, 'true', 'yes', 'oui']:
-            #     nom.labels.add(label)
+        for nom in nomenclatures.values():
+            # Check the CSV file to know if the label is used in this nomenclature
+            if labels[nom.name][l] in ['x', 1, True, 'true', 'yes', 'oui']:
+                # crud.create(db, NomLabelAssociation, {
+                #     'label_id': label.id,
+                #     'nomenclature_id': nom.id
+                # })
+                # label.nomenclatures_id
+                nom.labels.append(label)
+                # if label.nomenclatures_id is None:
+                #     label.nomenclatures_id = [nom.id]
+                # else:
+                #     label.nomenclatures_id.append(nom.id)
+    # db.flush()
+    # for nom in nomenclatures.values():
+    #     crud.update(db, Nomenclature, id=nom.id, labels_id=nom.labels_id)
 
-    # Finally, set parents
-    # for ln, label in added_labels.values():
-    #     if ln > -1 and parents[ln]:
-    #         label.parent = added_labels[name][1]
-    #         label.save()
+    # Finally, set parents (ln is the index of the name in the .hie file)
+    for ln, label in added_labels.values():
+        if ln > -1 and parents[ln]:
+            pname = split_label_name(parents[ln])[0]
+            if pname in added_labels.keys():
+                #crud.update(db, Label, id=label.id, parent_id=added_labels[pname][1].id)
+                label.parent = added_labels[pname][1]
+            else:
+                print('Unknown parent "{}"'.format(pname))
+    db.commit()
 
     print("Done")
 
