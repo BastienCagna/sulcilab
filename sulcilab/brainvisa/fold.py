@@ -18,6 +18,7 @@ class Fold(Base, SulciLabBase):
     graph_id = Column(Integer, ForeignKey("graphs.id"))
     graph = relationship("Graph", back_populates="folds")
     vertex = Column(Integer)
+    mesh_index = Column(Integer)
 
 
 ##################
@@ -27,6 +28,7 @@ class Fold(Base, SulciLabBase):
 class PFoldBase(BaseModel):
     graph_id: int
     vertex: int
+    mesh_index: int
 class PFoldCreate(PFoldBase):
     pass
 class PFold(PFoldBase, SulciLabReadingModel):

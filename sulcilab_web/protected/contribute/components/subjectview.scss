@@ -1,0 +1,55 @@
+.sview-graphlist {
+    margin: 0px;
+    padding: 0px;
+
+    >li {
+        margin: 0px;
+        margin-bottom: 32px;
+        padding: 0px;
+        list-style: none;
+        background-color: rgb(80, 80, 80);
+        text-align: left;
+
+        border: 1px solid #12413f;
+        border-radius: 4px;
+
+        .item-header {
+            background-color: #12413f;
+            border-radius: 4px 4px 0px 0px;
+
+            .controls {
+                float: right;
+            }
+
+            h4 {
+                margin: 0px;
+                padding: 4px;
+            }
+        }
+    }
+}
+
+.sview-lsetlist {
+    > li  {
+        display: inline-block;
+        width: 94%;
+        margin: 5px;
+        margin-left: 5%;
+        padding: 5px;
+        list-style: none;
+        background-color: rgb(209, 177, 36);
+
+        * {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .controls {
+            float: right;
+        }
+    }
+
+    >li:hover {
+        background-color: lighten($color: rgb(209, 177, 36), $amount: 1);
+    }
+}

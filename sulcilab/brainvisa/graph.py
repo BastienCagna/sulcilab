@@ -1,3 +1,4 @@
+from glob import glob
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
 from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -41,36 +42,23 @@ class Graph(Base, SulciLabBase):
     folds = relationship("Fold", back_populates="graph")
 
     def get_mesh_path(self, type="white") -> str:
-        # db = BVDatabase(self.subject.database.path)
-        # return db.get_from_template(
-        #     'morphologist_mesh',
-        #     center=self.analysis.subject.center,
-        #     subject=self.analysis.subject.name,
-        #     acquisition=self.analysis.subject.acquisition,
-        #     analysis=self.analysis.analysis,
-        #     hemi=self.hemisphere,
-        #     type=type
-        # )[0]
-        # v_path = op.join(self.subject.database.path, self.subject.center, "t1mri", self.acquisition, self.analysis, "folds", self.version)
-        # if not self.session:
-        #     return op.join(v_path, "{}{}.arg".format(self.hemisphere, self.subject.name))
-        # else:
-        #     return op.join(v_path, self.session, "{}{}_{}.arg".format(self.hemisphere, self.subject.name, self.session))
-        v_path = op.join(self.subject.database.path, self.subject.center, self.subject.name, "t1mri", self.acquisition, self.analysis, "segmentation", "mesh")
-        return op.join(v_path, f"{self.subject.name}_{self.hemisphere.value}{type}.gii")
+        v_path = op.join(self.subject.database.path, self.subject.center if self.subject.center else "*", self.subject.name, "t1mri", self.acquisition, self.analysis, "segmentation", "mesh")
+        temp = op.join(v_path, f"{self.subject.name}_{self.hemisphere.value}{type}.gii")
+        return glob(temp)[0]
 
     def get_path(self):
-        v_path = op.join(self.subject.database.path, self.subject.center, self.subject.name, "t1mri", self.acquisition, self.analysis, "folds", self.version.value)
+        v_path = op.join(self.subject.database.path, self.subject.center if self.subject.center else "*", self.subject.name, "t1mri", self.acquisition, self.analysis, "folds", self.version.value)
         if not self.session:
-            return op.join(v_path, "{}{}.arg".format(self.hemisphere.value, self.subject.name))
+            tmp = op.join(v_path, "{}{}.arg".format(self.hemisphere.value, self.subject.name))
         else:
-            return op.join(v_path, self.session, "{}{}_{}.arg".format(self.hemisphere.value, self.subject.name, self.session))
+            tmp = op.join(v_path, self.session, "{}{}_{}.arg".format(self.hemisphere.value, self.subject.name, self.session))
+        return glob(tmp)[0]
 
     def get_folds_meshes_path(self):
         data_path = self.get_path()[:-4] + '.data'
         return op.join(data_path, "aims_Tmtktri.gii")
 
-    def load_mesh(self, type="white"):
+    def load_mesh(self, type="hemi"):
         gii = nb.load(self.get_mesh_path(type=type))
         return {
             'type': type,
@@ -103,6 +91,8 @@ class PGraphCreate(PGraphBase):
     pass
 class PGraph(PGraphBase, SulciLabReadingModel):
     subject: "PSubjectBase"
+
+class PGraphFull(PGraph, SulciLabReadingModel):
     folds: "List[PFold]"
 
 

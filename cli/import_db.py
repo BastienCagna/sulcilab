@@ -51,7 +51,7 @@ def import_graph(arg_file: str, db,
             lname, lhemi = split_label_name(v['name'])
             left = lhemi == "L" or lhemi == "X"
             right = lhemi == "R" or lhemi == "X"
-            fold = crud.create(db, Fold, graph=graph, vertex=v['index'])
+            fold = crud.create(db, Fold, graph=graph, vertex=v['index'], mesh_index=v['Tmtktri_label'])
             try:
                 if left and right:
                     labels = crud.get_by(db, Label, shortname=lname, left=left, right=right)
@@ -106,7 +106,13 @@ def import_db(path, name, fr_spe, acq, ana, version, graph_sess, nom_name, verbo
         print('Scanning the subjects...')
     r = 0
     missing_labels = set()
-    for sub in tqdm(list(sorted(subjects[:2]))):
+    for sub in tqdm(list(sorted(subjects))):
+        subject = crud.create(db, Subject, 
+            database=database, 
+            name=sub, 
+            #center=graph_cent,
+            species=species
+        )
         for h in ['L', 'R']:
             graph_f = None
             for center in centers:
@@ -124,15 +130,12 @@ def import_db(path, name, fr_spe, acq, ana, version, graph_sess, nom_name, verbo
                     break
 
             if graph_f:
-                subject = crud.create(db, Subject, 
-                    database=database, 
-                    name=sub, 
-                    center=graph_cent,
-                    species=species
-                )
+                # try:
                 _, _, miss_lbl = import_graph(graph_f, db, subject, graph_acq, graph_ana, h, graph_v, graph_sess, nomenclature, user)
                 missing_labels.union(miss_lbl)
                 r += 1
+                # except:
+                #     warn("Failed to load {}".format(graph_f))
             else:
                 warn("No valid graph for subject {}".format(sub))
 

@@ -1,10 +1,10 @@
 import os.path as op
 from os import listdir
 import os
-from typing import Union
-from collections.abc import Sequence
 from glob import glob
 from warnings import warn
+
+VERSIONS = ['3.0', '3.1', '3.2', '3.3', '3.4']
 
 
 def extend_templates(templates, default_value=None, start_tag="[", end_tag="]", **kwargs):
@@ -370,6 +370,8 @@ class BVDatabase(FileDatabase):
                         # Graphs
                         if op.isdir(fold_path):
                             for version in listdir(fold_path):
+                                if not version in VERSIONS:
+                                    continue
                                 fold_subpath = op.join(fold_path, version)
 
                                 for f in listdir(fold_subpath):

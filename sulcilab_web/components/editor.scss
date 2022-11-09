@@ -1,0 +1,29 @@
+.editor-viewer-col{
+    display: block;
+    min-width: 600px;
+    width: 80%;
+}
+
+.editor-side-col{
+    display: block;
+    min-width: 200px;
+    width: 20%;
+    max-height: 100vh;
+    overflow-y: scroll;
+    background-color: lightgray;
+}
+
+.editor-labels {
+    list-style: none;
+
+    li {
+        display: inline-block;
+        min-width: 100px;
+        width: 45%;
+        margin: 2px;
+    }
+
+    li:hover {
+        cursor: pointer;
+    }
+}

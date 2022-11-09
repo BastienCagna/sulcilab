@@ -1,17 +1,16 @@
 import React from "react";
 import './contribute.css';
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button, Callout, ControlGroup, InputGroup, MenuItem, Spinner } from "@blueprintjs/core"
 import { Select2, ICreateNewItem, ItemPredicate } from "@blueprintjs/select";
 
-import { DatabasesService, PDatabase, PLabelingSetWithoutLabelings, PSubject } from "../../api";
+import { DatabasesService, PDatabase, PLabelingSet, PLabelingSetWithoutLabelings, PSubject } from "../../api";
 import ProtectedComponent from "../protectedcomponent";
 import SubjectList from './components/subjectlist';
 import SubjectView from './components/subjectview';
 import ViewerComponent from "../../components/viewer";
-
-
+import withNavigationHook from "../../helper/navigation";
 
 const DatabaseSelect = Select2.ofType<PDatabase>();
 
@@ -39,8 +38,8 @@ function filterSubject(query: string, subject: PSubject, database: PDatabase|nul
     return `${subjectStr}`.indexOf(query.toLowerCase()) >= 0;
 }
 
-
-export default class Contribute extends ProtectedComponent {
+class Contribute extends ProtectedComponent {
+    
     constructor(props: any) {
         super(props);
         this.reset();
@@ -79,22 +78,21 @@ export default class Contribute extends ProtectedComponent {
         this.loadDatabases();
     }
 
-
-    filterSubjects = () => {
-        // console.log("database:", this.state.selectedDatabase);
-        // console.log('query:', this.state.query);
-        if(this.state.selectedDatabase) {
+    filterSubjects = (database:PDatabase|null = null) => {
+        const db = database ? database : this.state.selectedDatabase;
+        //console.log('query:', db.subjects);
+        if(db) {
             this.setState({
-                subjects: this.state.selectedDatabase.subjects.filter((subject) => {
-                    return filterSubject(this.state.query, subject, this.state.selectedDatabase)
-                })
+                subjects: db.subjects/*.filter((subject) => {
+                    return filterSubject(this.state.query, subject, db)
+                })*/
             })
         }
     };
 
     async changeDatabase(db: PDatabase | ICreateNewItem | null, isCreateNewItem: boolean) {
-        this.setState({selectedDatabase: db});
-        this.filterSubjects();
+        this.setState({selectedDatabase: db, currentSubject: null});
+        this.filterSubjects(db as PDatabase);
     };
 
     queryChanged = (event: any) => {
@@ -119,10 +117,30 @@ export default class Contribute extends ProtectedComponent {
         this.setState({previewLSet: lset});
     }
 
+    openInViewer() {
+        // const navigate = useNavigate();
+        //console.log(this.props.navigation, this.props.navigation.navigate);
+        this.props.navigation('/view', { state : {lsets: this.state.selectedLabelingSets }});
+    }
+
+    openInEditor() {
+        // const navigate = useNavigate();
+        //console.log(this.props.navigation, this.props.navigation.navigate);
+        this.props.navigation('/edit', { state : {lsets: this.state.selectedLabelingSets }});
+    }
+
+    unSelect(lset: PLabelingSet) {
+        const sel = this.state.selectedLabelingSets;
+        sel.splice(sel.indexOf(lset), 1);
+        this.setState({
+            selectedLabelingSets: sel
+        })
+    }
+
     render() { 
         const nSubs = this.state.subjects.length;
         const selectedLSets = this.state.selectedLabelingSets.map(lset => {
-                return <li>{lset.graph.subject.name} / {lset.graph.hemisphere} <Button icon="cross"/> </li>    
+                return <li key={lset.id}>{lset.graph.subject.name} / {lset.graph.hemisphere} <Button icon="cross" lset-id={lset.id} onClick={() =>{ this.unSelect(lset);}}/> </li>    
             })
         return (
         <div className="App">
@@ -141,8 +159,8 @@ export default class Contribute extends ProtectedComponent {
                                 itemPredicate={filterDatabase}
                                 itemRenderer={(item: Database, {handleClick, handleFocus}) => {return (<MenuItem key={item.id} text={item.name} onClick={handleClick} onFocus={handleFocus} />)} }
                                 noResults={<MenuItem disabled={true} text="No results." />}
-                                onItemSelect={this.changeDatabase}
-                                query={this.state.selectedDatabase ? this.state.selectedDatabase.name : ""}
+                                onItemSelect={this.changeDatabase.bind(this)}
+                                //query={this.state.selectedDatabase ? this.state.selectedDatabase.name : ""}
                                 //onActiveItemChange={this.changeDatabase}
                             >
                                 { this.state.databases &&
@@ -184,8 +202,8 @@ export default class Contribute extends ProtectedComponent {
                             <ul>
                                 {selectedLSets}
                             </ul>
-                            <Button text="Open in the viewer" intent="primary"></Button>
-                            <Button text="Open in the editor" intent="success"></Button>
+                            <Button text="Open in the viewer" intent="primary" onClick={this.openInViewer.bind(this)}></Button>
+                            <Button text="Open in the editor" intent="success" onClick={this.openInEditor.bind(this)}></Button>
                         </div>
                     </Callout>
                 </section>
@@ -193,3 +211,6 @@ export default class Contribute extends ProtectedComponent {
         </div>
     );}
 }
+
+
+export default withNavigationHook(Contribute);

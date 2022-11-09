@@ -63,8 +63,10 @@ def sqlalchemy_to_pydantic_instance(object, pmodel):
     # Ge the Pydantic description as dict
     schema = pmodel.schema()
 
+    deffs = schema['definitions'] if 'definitions' in schema else None
+
     # Then convert either as a list or a single object
     if isinstance(object, Iterable):
-        return list(_sqlalchemy_to_pydantic_instance(o, schema, schema['definitions']) for o in object)
+        return list(_sqlalchemy_to_pydantic_instance(o, schema, deffs) for o in object)
     else:
-        return _sqlalchemy_to_pydantic_instance(object, schema, schema['definitions'])
+        return _sqlalchemy_to_pydantic_instance(object, schema, deffs)

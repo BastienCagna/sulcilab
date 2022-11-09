@@ -11,6 +11,17 @@
         font-weight: bold;
     }
 
+    .wb-edit-controls {
+        color: white;
+        font-size: large;
+        font-weight: bold;
+        opacity: 0.9;
+
+    }
+    .wb-edit-controls:hover {
+        // opacity: 1.0;
+    }
+
 }
 
 .bw-toolbar {

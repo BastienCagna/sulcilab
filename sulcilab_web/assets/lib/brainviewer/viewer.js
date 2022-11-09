@@ -89,13 +89,19 @@ export class Viewer {
                 this.controls.rotateSpeed = 2.0;
                 this.controls.addEventListener('change', this.cameraWidget.onCameraChange);
         */
+        // this.scene.add(new THREE.AmbientLight(0xffffff, 2));
         this.scene.add(new THREE.AmbientLight(0xffffff, 2));
-        const sun = new THREE.DirectionalLight(0xffffff, 1,5);
+        // const sun = new THREE.DirectionalLight(0xffffff, 1,5);
+        const sun = new THREE.DirectionalLight(0xffffff, 2);
+        // const sun = new THREE.DirectionalLight(0x00ffff, 2);
         sun.position.set(0, 1000, 0);
         sun.castShadow = true;
         this.scene.add(sun);
-        const moon = new THREE.DirectionalLight(0xffffff, 0.75);
-        moon.position.set(0, -1000, 0);
+        // const moon = new THREE.DirectionalLight(0xffffff, 0.75);
+        const moon = new THREE.DirectionalLight(0xffffff, 1.5);
+        // const moon = new THREE.DirectionalLight(0xff0000, 1.2);
+        // moon.position.set(0, -1000, 0);
+        moon.position.set(0, -1000, -1000);
         this.scene.add(moon);
 
         this.origin = new THREE.AxesHelper(1000);
@@ -162,6 +168,23 @@ export class Viewer {
                 this.onClickOnObject(evt);
             }
         });
+
+        // this.mouseHelper =  new THREE.Mesh( new THREE.BoxGeometry( 1, 1, 10 ), new THREE.MeshNormalMaterial());
+        // this.mouseHelper.userData =  {"meshType": "system"};
+        // this.mouseHelper.visible = false;
+        // this.scene.add( this.mouseHelper );
+        // const geometry = new THREE.BufferGeometry();
+        // geometry.setFromPoints( [ new THREE.Vector3(), new THREE.Vector3() ] );
+        // this.line = new THREE.Line( geometry, new THREE.LineBasicMaterial({ linewidth: 3, color: 0xff0000ff}));
+        // //this.line.userData()
+        // this.scene.add( this.line );
+        // this.intersection = {
+        //     intersects: false,
+        //     point: new THREE.Vector3(),
+        //     normal: new THREE.Vector3()
+        // };
+        // window.addEventListener( 'pointermove', this.onPointerMove.bind(this));
+
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         window.addEventListener( 'resize', this.onWindowResize.bind(this), false );
         this.controls.addEventListener('change', this.onPositionChange.bind(this));
@@ -169,7 +192,8 @@ export class Viewer {
 
     reset() {
         this.allObjects().forEach(obj => {
-            if(obj.type == "Mesh") {
+            if(obj.type !== "Mesh" || (obj.userData['meshType'] && obj.userData['meshType'] == "system") ) {
+            } else {
                 obj.geometry.dispose()
                 obj.material.dispose()
                 this.scene.remove(obj);
@@ -179,11 +203,12 @@ export class Viewer {
         this.resetCamera();   
     }
 
+    resetSelection() {
+        this.outlinePass.selectedObjects = [];
+    }
+
     addSlave(slave) {
         this.slaves.push(slave);
-        // slave.controls = this.controls;
-        // slave.camera = this.camera;
-        // console.log("setting master controls and camera to slave")
     }
 
     addMesh(vertices, triangles, metadata = null, color = 0xaaaaaa, selectable = true, transparent = true) {
@@ -210,17 +235,22 @@ export class Viewer {
         // geometry.computeFaceNormals();
         geometry.computeBoundingSphere();
 
-        //const material = new THREE.MeshLambertMaterial({
-        const material = new THREE.MeshPhongMaterial({ 
-        //const material = new THREE.MeshToonMaterial({ 
+        // const material = new THREE.MeshLambertMaterial({
+        // const material = new THREE.MeshPhongMaterial({ 
+        // const material = new THREE.MeshToonMaterial({ 
+        const material = new THREE.MeshStandardMaterial({ 
             opacity: 1,
-            shininess: 30,
+            // shininess: 30,
             transparent: transparent,
             color: color,
             side: THREE.DoubleSide,
             blending: THREE.NormalBlending,
             shadowSide: THREE.DoubleSide,
+            // Standard
+            roughness: 0.7,
+            metalness: 0.4
         });
+        
         //const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.castShadow = true;
@@ -251,6 +281,17 @@ export class Viewer {
     allObjects() {
         return listChildren(this.scene).slice(1);
     }
+    getFirstMesh() {
+        const objects = listChildren(this.scene).slice(1)
+        let object;
+        for(let o=0; o<objects.length; o++) {
+            object = objects[o];
+            if(object.type == "Mesh" && object.userData['meshType']) {
+                if(object.userData['meshType'] != "system") return object;
+            }
+        };
+        return null;
+    }
     getObjectById(id) {
         return this.scene.getObjectById(id);
     }
@@ -264,8 +305,8 @@ export class Viewer {
         }
     }
     resetCamera() {
-        // this.setCameraPosition(120, 40, 0);
         this.setCameraPosition(4, 0, 100);
+        // this.setCameraPosition(0, 0, 0);
     }
     setCameraPosition(x, y, z) {
         this.camera.position.x = x;
@@ -284,7 +325,52 @@ export class Viewer {
         this.composer.setSize(this.width, this.height);
     }
 
+    // onPointerMove(event) {
+    //     var rect = this.domElement.getBoundingClientRect();
+    //     // FIXME: it does not work :'(  ====> need to apply the offset!!
+    //     // src: https://github.com/mrdoob/three.js/blob/master/examples/webgl_decals.html
+    //     const x = ((event.clientX-rect.left) / this.width) * 2 - 1;
+    //     const y = -((event.clientY-rect.top) / this.height) * 2 + 1;
+    //     const mesh = this.getFirstMesh();
+    //     if (!mesh) return;
 
+    //     this.mouse.x = x; //( x / window.innerWidth ) * 2 - 1;
+    //     this.mouse.y = y; //- ( y / window.innerHeight ) * 2 + 1;
+
+    //     this.raycaster.setFromCamera( this.mouse, this.camera );
+    //     const intersects = this.raycaster.intersectObject( mesh, false);
+    //     if ( intersects.length > 0 ) {
+
+    //         const p = intersects[ 0 ].point.sub(this.offset);
+            
+    //         this.mouseHelper.position.copy( p );
+    //         this.intersection.point.copy( p );
+
+    //         const n = intersects[ 0 ].face.normal.clone();
+    //         n.transformDirection( mesh.matrixWorld );
+    //         n.multiplyScalar( 1000 );
+    //         n.add( intersects[ 0 ].point );
+
+    //         this.intersection.normal.copy( intersects[ 0 ].face.normal );
+    //         this.mouseHelper.lookAt( n );
+
+    //         const positions = this.line.geometry.attributes.position;
+    //         positions.setXYZ( 0, p.x, p.y, p.z);
+    //         positions.setXYZ( 1, n.x, n.y, n.z);
+    //         positions.needsUpdate = true;
+
+    //         this.intersection.intersects = true;
+
+    //         intersects.length = 0;
+    //         // console.log("intersecitons", this.intersection);
+
+    //     } else {
+
+    //         this.intersection.intersects = false;
+
+    //     }
+    // }
+    
     intersectingObjects(event) {
         var rect = this.domElement.getBoundingClientRect();
         this.mouse.x = ((event.clientX-rect.left) / this.width) * 2 - 1;
@@ -352,6 +438,11 @@ export class Viewer {
                 }
                 break;
         }
+    }
+
+    rotate(on, speed = .2) {
+        speed = (speed > 1)? 1 : (speed < -1)? -1 : speed;
+        this.camRotationSpeed = (!on && this.camRotationSpeed != 0) ? 0 : speed * .025;
     }
 
     // https://stackoverflow.com/questions/58705286/how-programmatically-focus-a-mesh-in-three-js-on-click-on-a-button

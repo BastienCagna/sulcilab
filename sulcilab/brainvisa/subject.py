@@ -1,3 +1,4 @@
+from typing import Union
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
 from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
@@ -49,7 +50,7 @@ class Subject(Base, SulciLabBase):
 ##################
 class PSubjectBase(BaseModel):
     database_id: int
-    center: str
+    center: Union[str, None]
     name: str
     species: "PSpecies" = None
     class Config:

@@ -5,6 +5,7 @@ from typing import List, Union
 from pydantic import BaseModel
 import os.path as op
 import ujson
+from sulcilab.brainvisa.fold import PFold, PFoldBase
 
 from sulcilab.brainvisa.subject import PSubject, PSubjectBase, Subject
 from sulcilab.utils.io import check_dir, read_arg, write_arg
@@ -14,7 +15,7 @@ from sulcilab.core import crud
 from sulcilab.core.schemas import SulciLabReadingModel
 from sulcilab.core.user import PUser, User, get_user_by_token, oauth2_scheme
 from sulcilab.utils.misc import filt_keys, sqlalchemy_to_pydantic_instance
-
+from time import time
 
 DEFAULT_OUTPUT_DATABASE_PATH = op.join(op.split(__file__)[0], "..", "..", "working_database")
 
@@ -83,7 +84,7 @@ class PLabelingSetCreate(PLabelingSetBase):
 class PLabelingSetWithoutLabelings(PLabelingSetBase, SulciLabReadingModel):
     # author: 'PUserBase'
     graph: "PGraph"
-    nomenclature: "PNomenclature"
+    # nomenclature: "PNomenclature"
 class PLabelingSet(PLabelingSetWithoutLabelings):
     labelings: List["PLabeling"] = []
 
@@ -96,7 +97,7 @@ class PLabelingSetShort(BaseModel):
 from sulcilab.core.user import PUserBase, get_user_by_token
 from .nomenclature import PNomenclature
 from .graph import PGraph
-from .labeling import PLabeling
+from .labeling import PLabeling, PLabelingBase
 PLabelingSet.update_forward_refs()
 PLabelingSetWithoutLabelings.update_forward_refs()
 
@@ -113,6 +114,21 @@ router = APIRouter()
 @router.get("/all", response_model=List[PLabelingSet])
 def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_all(db, LabelingSet, skip=skip, limit=limit)
+
+# @router.get("/ofuser", dependencies=[Depends(JWTBearer())], response_model=List[PLabelingSetWithoutLabelings])
+# def get_labelingsets_of_user(user_id: int, skip: int = 0, limit: int = 500, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+#     cuser = get_user_by_token(db, token)
+#     user = crud.get(db, User, user_id)
+#     if user.id != cuser.id and not cuser.is_admin:
+#         raise HTTPException(status_code=403, detail="Only admin can list labelings set of an other user.")
+#     sub = crud.get(db, Subject, sub_id)
+
+#     gids = list(g.id for g in sub.graphs)
+#     query = db.query(LabelingSet).filter(LabelingSet.graph_id.in_(gids)).offset(skip)
+#     if limit:
+#         query = query.limit(limit)
+    
+#     return sqlalchemy_to_pydantic_instance(query.all(), PLabelingSetWithoutLabelings)
 
 @router.get("/usersubject", dependencies=[Depends(JWTBearer())], response_model=List[PLabelingSetWithoutLabelings])
 def get_labelingsets_of_user_for_a_subject(user_id: int, sub_id: int, skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -145,13 +161,22 @@ def get_labelingset_data(lset_id: int, db: Session = Depends(get_db)):
     
     # TODO: verify the access rights!
 
+    # tic = time()
+    mesh = lset.graph.load_mesh()
+    fmeshes = lset.graph.load_folds_meshes()
+    folds = sqlalchemy_to_pydantic_instance(lset.graph.folds, PFold)
+    labelings = sqlalchemy_to_pydantic_instance(lset.labelings, PLabelingBase)
+    subject = sqlalchemy_to_pydantic_instance(lset.graph.subject, PSubjectBase)
+    nomenclature = sqlalchemy_to_pydantic_instance(lset.nomenclature, PNomenclature)
+    # print("Loading and formatting took {}s".format(time() - tic))
     return Response(ujson.dumps({
-        'subject': sqlalchemy_to_pydantic_instance(lset.graph.subject, PSubjectBase),
-        'mesh': lset.graph.load_mesh(), 
-        'folds_meshes': lset.graph.load_folds_meshes(),
+        'subject': subject,
+        'mesh': mesh, 
+        'folds_meshes': fmeshes,
+        'folds': folds,
         # TODO: split the mesh loading from labelings loading
-        'labelings': sqlalchemy_to_pydantic_instance(lset.labelings, PLabeling), 
-        'nomenclature': sqlalchemy_to_pydantic_instance(lset.nomenclature, PNomenclature)
+        'labelings': labelings, 
+        'nomenclature': nomenclature 
     }), media_type="application/json")
 
 
