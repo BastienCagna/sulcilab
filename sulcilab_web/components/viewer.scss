@@ -36,11 +36,21 @@
             display: inline-block;
             vertical-align: middle;
         }
+        span {
+            background-color: rgb(206, 206, 206);
+            margin-right: 0.5em;
+            padding: 1px 5px;
+            border-radius: 6px;
+        }
         .bw-brand {
+            background-color: inherit;
             font-weight: bold;;
         }
-        span {
-            margin-right: 0.5em;
+        .bp4-icon {
+            background-color: inherit;
+            position: relative;
+            top: -1px;
+            margin: auto;
         }
     }
 

@@ -8,7 +8,8 @@ import { LabelingSetsService, PLabel, PLabeling } from '../api';
 import { Icon, Slider, Spinner } from "@blueprintjs/core";
 import ViewerComponent from "./viewer";
 
-import { getLabel } from './viewer_utils';
+import { getLabel, strColor, checkBackgrounColor } from './viewer_utils';
+
 
 /*
     Props
@@ -29,6 +30,7 @@ export default class MultiViewerComponent extends React.Component {
     viewersIds: string[] = [];
     length: number;
     showToolbar: boolean;
+    viewerComponents = [];
 
     constructor(props: any) {
         super(props);
@@ -44,13 +46,13 @@ export default class MultiViewerComponent extends React.Component {
         for(let v=0; v < this.length; v++) {
             this.viewersIds.push(this.id + "_" + v.toString());
             this.viewers.push(null);
+            this.viewerComponents.push(React.createRef());
         }
 
-        document.addEventListener('keyup', this.onKeyUp.bind(this));
         this.init();
     }
 
-    init() {
+    init(intialState={}) {
         // Check that all the nomenclature are the same
         let nomId = null;
         if(this.props.lsets) {
@@ -65,33 +67,19 @@ export default class MultiViewerComponent extends React.Component {
             }
         }
 
-        this.state = {
+        this.state = Object.assign({}, intialState, {
             currentNomenclature: null,
             currentLabel: null,
             meshOpacity: 100
-        };
+        });
     }
 
-    // FIXME: labelise is oin viewer component not on the js class
-    labelize() {
-        if(this.state.currentLabel) {
-            for(let viewer of this.viewers) {
-                viewer.labelise(this.state.currentLabel)
-            }
-        }
-    }
+    
     resetSelection() {
         for(let viewer of this.viewers) {
             viewer.resetSelection();
         }
     }
-    onKeyUp(event: any) {
-        switch (event.key) {
-            case "l": this.labelize(); break;
-            case "k": this.resetSelection(); break;
-        }
-    }
-
     allViewersRegisteredHandler() {
         // For now only the first viewer can be master
         for(let v=1; v < this.length; v++) this.viewers[0].addSlave(this.viewers[v]);
@@ -120,7 +108,6 @@ export default class MultiViewerComponent extends React.Component {
         this.setState({"meshOpacity": val});
     }
 
-
     render() {
         const vWidth = Math.ceil((this.width) / this.nCols); 
         const vHeight = this.height / this.nRows; 
@@ -129,7 +116,7 @@ export default class MultiViewerComponent extends React.Component {
         for(let r=0; r < this.nRows; r++) {
             cols = [];
             for(let c=0; c < this.nCols; c++) {
-                cols.push(<td key={v}><ViewerComponent  key={v}
+                cols.push(<td key={v}><ViewerComponent ref={this.viewerComponents[v]} key={v}
                                 id={this.viewersIds[v]} 
                                 width={vWidth} height={vHeight} 
                                 lset={this.props.lsets[v]} 
@@ -142,6 +129,7 @@ export default class MultiViewerComponent extends React.Component {
             }
             rows.push(<tr key={r}>{cols}</tr>)
         }
+
         return (
             <div style={{width: this.width}}>
                 <table className="bw-grid">
@@ -157,16 +145,12 @@ export default class MultiViewerComponent extends React.Component {
                                 <span><Icon icon="label" ></Icon>{this.state.currentNomenclature.name}
                                 </span>
                             }
-                            { this.state.currentNomenclature && (
-                                <div>
-                                    { this.state.currentLabel &&
-                                        <span>
-                                            <Icon icon="tag"></Icon>
-                                            {this.state.currentLabel.shortname} - {this.state.currentLabel.fr_name}
-                                        </span>
-                                    }
-                                </div>
-                            )}
+                            { this.state.currentNomenclature && this.state.currentLabel &&
+                                <span className="bw-label-name" style={{backgroundColor: strColor(this.state.currentLabel.color), color: checkBackgrounColor(this.state.currentLabel.color, "black", "white")}}>
+                                    <Icon icon="tag"></Icon>
+                                    {this.state.currentLabel.shortname} - {this.state.currentLabel.fr_name}
+                                </span>
+                            }
                         </div>
                         
                         <div className="bw-controls">

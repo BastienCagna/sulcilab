@@ -25,7 +25,7 @@ python cli/setup_default_data.py
 python cli/install_nomenclatures.py ./data/labels.csv ./data/sulcal_root_colors.hie
 
 # BUILD the FastAPI javascript client
-# npm run api-build
+npm run api-build
 
 # Setup at Neurospin
-# python cli/import_db.py /neurospin/dico/data/bv_databases/human/manually_labeled/archi Archi archi 3.3 session1_manual Human
+python cli/import_db.py /neurospin/dico/data/bv_databases/human/manually_labeled/archi Archi archi 3.3 session1_manual Human

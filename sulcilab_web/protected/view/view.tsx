@@ -26,7 +26,7 @@ class View extends ProtectedComponent {
         const lsets = this.props.lsets ? this.props.lsets : this.props.navigation.getParam('lsets', []);
         if(lsets) {
             const n = lsets.length;
-            const c = Math.ceil(Math.sqrt(n));
+            const c = 4 //Math.ceil(Math.sqrt(n));
             const r = Math.floor(n / c);
             this.setState({
                 lsets: lsets,

@@ -35,7 +35,8 @@ export class Viewer {
     objects = [];
     slaves = [];
 
-    onClickCallBack = null;
+    onLeftClickCallBack = null;
+    onRightClickCallBack = null;
     onDoubleClickCallBack = null;
     onFrameCallBack = null;
 
@@ -205,6 +206,10 @@ export class Viewer {
 
     resetSelection() {
         this.outlinePass.selectedObjects = [];
+    }
+
+    getSelection() {
+        return this.outlinePass.selectedObjects;
     }
 
     addSlave(slave) {
@@ -396,7 +401,8 @@ export class Viewer {
     onClickOnObject(event) {
         event.preventDefault();
         const obj = this.intersectingObjects(event);
-        if (this.onClickCallBack) this.onClickCallBack(obj);
+        if(event.button==0 && this.onLeftClickCallBack) this.onLeftClickCallBack(obj);
+        else if(event.button==2 && this.onRightClickCallBack) this.onRightClickCallBack(obj);
     }
 
     onDoubleClickOnObject(event) {

@@ -1,4 +1,6 @@
 import { PColor } from "../api";
+import * as THREE from 'https://cdn.skypack.dev/three@v0.135.0';
+
 
 function computeOffset(vertices: any) {
     var sum = [0, 0, 0];
@@ -23,8 +25,24 @@ function getLabel(nomenclature: PNomenclature, labelId: number) {
     return null;
 }
 
+/*
+*   Convert PColor to CSS "rgba(red, green, blue, alpha)"
+*/
 function strColor(c: PColor){
     return "rgba(" + [c.red, c.green, c.blue, c.alpha].join(', ') + ")";
 }
 
-export {computeOffset, getLabel, strColor}
+function threeJsColor(color: PColor) {
+    return new THREE.Color(color.red/255.0, color.green/255.0, color.blue/255.0);
+}
+
+/*
+* Return lightColor or darkColor depending on the hexcolor value
+*/
+function checkBackgrounColor(color: PColor, darkColor: any, lightColor: any){
+    var yiq = ((color.red*299)+(color.green*587)+(color.blue*114))/1000;
+    // Return new color if to dark, else return the original
+    return (yiq < 40) ? lightColor : darkColor;
+}
+
+export {computeOffset, getLabel, strColor, threeJsColor, checkBackgrounColor}

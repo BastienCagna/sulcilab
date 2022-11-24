@@ -130,7 +130,7 @@ def login(user: PUserSignIn, db: Session = Depends(get_db)):
     raise HTTPException(401, "Wrong credentials")
 
 @router.get("/all", dependencies=[Depends(JWTBearer())], response_model=List[PUser])
-def read(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def list_all(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     # user = get_current_user(db, token)
     users = crud.get_all(db, User, skip=skip, limit=limit)
     return users

@@ -1,3 +1,4 @@
+from sulcilab.auth.auth_bearer import JWTBearer
 from sulcilab.brainvisa.fold import PFold
 from sulcilab.brainvisa.label import PLabel
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
@@ -5,6 +6,7 @@ from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Union
 from pydantic import BaseModel
+from sulcilab.core.user import User, get_user_by_token, oauth2_scheme
 from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
@@ -38,12 +40,13 @@ class Labeling(Base, SulciLabBase):
 
 
 class PLabelingBase(BaseModel):
+    id: int = -1
     fold_id: int
     label_id: Union[int, None]
     labelingset_id: int
     rate: Union[float, None]
     comment: Union[str, None]
-
+    iterations: int = 0
 
 class PLabelingCreate(PLabelingBase):
     pass
@@ -52,7 +55,6 @@ class PLabelingCreate(PLabelingBase):
 class PLabeling(PLabelingBase, SulciLabReadingModel):
     fold: PFold
     label: Union[PLabel, None]
-    iterations: int
 
 
 PLabeling.update_forward_refs()

@@ -27,15 +27,16 @@ def get_one_by(db: Session, model:SulciLabBase, **filters):
     #     query.filter(getattr(model, k) == v)
     return query.first()
 
-def create(db: Session, model:SulciLabBase, item: dict=None, **kwargs):
+def create(db: Session, model:SulciLabBase, item: dict=None, commitAndRefresh=True, **kwargs):
     if item is None:
         item = {}
     for k, v in kwargs.items():
         item[k] = v
     db_item = model(**item)
     db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
+    if commitAndRefresh:
+        db.commit()
+        db.refresh(db_item)
     return db_item
 
 def update(db: Session, model:SulciLabBase, **kwargs):
@@ -57,4 +58,3 @@ def delete(db: Session, model:SulciLabBase, id: int):
     query.filter(model.id == id).delete()
     db.commit()
     # raise NotImplementedError()
-

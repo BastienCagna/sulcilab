@@ -7,7 +7,7 @@ import { Viewer } from "../assets/lib/brainviewer/viewer";
 import { LabelingSetsService, PLabel, PLabeling, PNomenclature } from '../api';
 import { Button, Icon, Slider, Spinner } from "@blueprintjs/core";
 
-import { computeOffset, getLabel } from './viewer_utils';
+import { computeOffset, getLabel, threeJsColor} from './viewer_utils';
 
 /*
     Props
@@ -24,7 +24,6 @@ import { computeOffset, getLabel } from './viewer_utils';
 export default class ViewerComponent extends React.Component {
     viewer: Viewer | null = null;
     id: string;
-    indexedLabelings = [];
     width: number;
     height: number;
     showToolbar: boolean;
@@ -44,7 +43,6 @@ export default class ViewerComponent extends React.Component {
             brainMesh: null,
             meshOpacity: 100,
             currentLabel: null,
-            selectedObject: null,
             currentNomenclature: null,
             editable: this.props.editable != undefined ? this.props.editable : true, //false
             hasChanged: false
@@ -98,14 +96,18 @@ export default class ViewerComponent extends React.Component {
                                 break;
                             }
                         }
+                        // Set the mesh color and add the labeling to mesh user data
                         for(let o=0; o < sceneObjects.length; o++) {
                             mesh = sceneObjects[o];
+                            // If the object has a mesh index
                             if(mesh.userData && mesh.userData.meshIndex != undefined && mesh.userData.meshIndex == meshIndex) {
-                                this.indexedLabelings[meshIndex] = labeling
                                 label = getLabel(data.nomenclature, labeling.label_id); //labeling.label.color;
                                 if(label) {
                                     color = label.color;
-                                    mesh.material.color = new THREE.Color(color.red/255.0, color.green/255.0, color.blue/255.0);    
+                                    mesh.material.color = threeJsColor(color);
+                                    mesh.userData['labeling'] = labeling;
+                                    mesh.userData['originalLabeling'] = {...labeling}; // deep copy
+                                    mesh.userData['originalColor'] = {...color}; // deep copy
                                 }
                                 break;
                             }
@@ -136,29 +138,101 @@ export default class ViewerComponent extends React.Component {
     setCurrentLabel(object: THREE.Object3D) {
         let label : PLabel | null = null;
 
-        if(object.userData.meshIndex)
-            label = getLabel(this.state.currentNomenclature, this.indexedLabelings[object.userData.meshIndex].label_id);
+        if(object && object.userData.meshIndex && object.userData.labeling)
+            label = getLabel(this.state.currentNomenclature, object.userData.labeling.label_id);
         
-        this.setState({currentLabel: label, selectedObject: object});
+        this.setState({currentLabel: label});
         if(this.props.onCurrentLabelChanged) {
             this.props.onCurrentLabelChanged(label);
         }
     }
 
-    labelize(label: PLabel) {
-        const object = this.state.selectedObject;
-        if(object) {
-            // TODO: verify if the label is different from the original
-            this.indexedLabelings[object.userData.meshIndex].label = label;
-            object.material.color = new THREE.Color(255, 255, 255);
-            this.setState({hasChanged: true})
+    checkHasChanged() {
+        if(!this.viewer) return;
+        const objects = this.viewer.allObjects()
+        for(let object of objects) {
+            if(object.userData && object.userData.labeling && object.userData.originalLabeling && object.userData.originalLabeling.label_id !== object.userData.labeling.label_id) {
+                this.setState({hasChanged: true});
+                return;
+            }
         }
+        this.setState({hasChanged: false});
+    }
+
+    labelize(label: PLabel) {
+        let selectedObjects;
+        if(!label || !this.viewer || !this.state.editable) {
+            return
+        }
+        selectedObjects = this.viewer.getSelection();
+        selectedObjects.forEach(object => {
+            if(object.userData.labeling && object.userData.labeling.label_id !== label.id) {
+                // Update object color
+                object.material.color = threeJsColor(label.color);
+                // Update object label id
+                object.userData.labeling.label_id = label.id;
+                // Check if at least one labeling has changed
+                if(object.userData.originalLabeling.label_id != label.id) {
+                    this.setState({hasChanged: true});
+                } else {
+                    this.checkHasChanged();
+                }
+            }
+        });
+    }
+
+    revertChanges() {
+        this.viewer?.allObjects().forEach(object => {
+            if(object.userData && object.userData.labeling && object.userData.originalLabeling && object.userData.originalLabeling.label_id !== object.userData.labeling.label_id) {
+                // Reset object color
+                object.material.color = threeJsColor(object.userData.originalColor);
+                // Reset object label id
+                object.userData.labeling.label_id = object.userData.originalLabeling.label_id;
+            }
+        })
+        this.checkHasChanged();
+    }
+
+    save() {
+        if(!this.viewer || !this.state.editable) return;
+
+        const labelings: PLabeling[] = [];
+        const updatedObjects: any[] = [];
+        const objects = this.viewer.allObjects();
+
+        for(let object of objects) {
+            if(object.userData && object.userData.labeling && object.userData.originalLabeling && object.userData.originalLabeling.label_id !== object.userData.labeling.label_id) {
+                labelings.push(object.userData.labeling);
+                updatedObjects.push(object);
+            }
+        }
+
+        this.setState({
+            isLoading: true, 
+            loadingMessage: `Saving updates (${labelings.length} labelings have changed)...`,
+            editable: false
+        });
+        LabelingSetsService.labelingSetsSaveLabelings(this.props.lset.id, labelings).then(
+            data => {
+                // Update originalLabeling of each saved objects
+                updatedObjects.forEach(object => {
+                    object.userData.originalLabeling = {...object.userData.labeling};
+                })
+                // Clear loading message and haschanged and set editable back to true
+                this.setState({
+                    isLoading: false, 
+                    loadingMessage: null, 
+                    hasChanged: false,
+                    editable: true
+                });
+            }
+        );
     }
 
     componentDidMount() {
         this.viewer = new Viewer(this, this.id, this.width, this.height);
         // this.viewer.onClickCallBack = this.setCurrentLabel.bind(this);
-        this.viewer.onDoubleClickCallBack = this.setCurrentLabel.bind(this);
+        this.viewer.onLeftClickCallBack = this.setCurrentLabel.bind(this);
         // this.viewer.onPositionChange = this.props.onCameraChange
         if(this.props.onViewerInit) this.props.onViewerInit(this.id, this.viewer);
 
@@ -185,8 +259,8 @@ export default class ViewerComponent extends React.Component {
             {this.state.hasChanged &&
                 <div style={{position: "absolute"}}>
                     <div className="wb-edit-controls" style={{position: "relative", left: this.width - 120, top: 5}} >
-                        <Button icon="reset"></Button>
-                        <Button icon="floppy-disk" intent="danger"></Button>
+                        <Button icon="reset" onClick={this.revertChanges.bind(this)}></Button>
+                        <Button icon="floppy-disk" intent="danger" onClick={this.save.bind(this)}></Button>
                     </div>
                 </div>
             }

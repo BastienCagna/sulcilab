@@ -2,17 +2,20 @@ import React from "react";
 import './contribute.css';
 
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Callout, ControlGroup, InputGroup, MenuItem, Spinner } from "@blueprintjs/core"
+import { Button, Callout, ControlGroup, InputGroup, MenuItem, Overlay, Spinner } from "@blueprintjs/core"
 import { Select2, ICreateNewItem, ItemPredicate } from "@blueprintjs/select";
 
-import { DatabasesService, PDatabase, PLabelingSet, PLabelingSetWithoutLabelings, PSubject } from "../../api";
+import { DatabasesService, LabelingSetsService, PDatabase, PGraph, PLabelingSet, PLabelingSetWithoutLabelings, PSubject } from "../../api";
 import ProtectedComponent from "../protectedcomponent";
 import SubjectList from './components/subjectlist';
 import SubjectView from './components/subjectview';
 import ViewerComponent from "../../components/viewer";
 import withNavigationHook from "../../helper/navigation";
 
+
 const DatabaseSelect = Select2.ofType<PDatabase>();
+const SubjectSelect = Select2.ofType<PSubject>();
+
 
 function filterDatabase(query: string, database: PDatabase, _index:any, exactMatch:any):  boolean {
     const normalizedTitle = database.name.toLowerCase();
@@ -25,17 +28,15 @@ function filterDatabase(query: string, database: PDatabase, _index:any, exactMat
     }
 };
 
-function filterSubject(query: string, subject: PSubject, database: PDatabase|null) {
-    /*if(database && database.id && subject.database_id !== database.id) {
-        return false;
-    }*/
-    
-    let subjectStr = `${subject.name} ${database ? database.name: ''}`.toLowerCase();
-    // subject.labelingsets.forEach(set => {
-    //     subjectStr += ` ${set.name} ${set.hemisphere}`
-    // });
+function filterSubject(query: string, subject: PSubject, _index:any, exactMatch:any) {
+    let subjectStr = `${subject.name}`.toLowerCase();
+    let normalizedQuery = query.toLowerCase();
 
-    return `${subjectStr}`.indexOf(query.toLowerCase()) >= 0;
+    if (exactMatch) {
+        return subjectStr === normalizedQuery;
+    } else {
+        return `${subjectStr}`.indexOf(normalizedQuery) >= 0;
+    }
 }
 
 class Contribute extends ProtectedComponent {
@@ -55,7 +56,8 @@ class Contribute extends ProtectedComponent {
             query: '',
             currentSubject: null,
             selectedLabelingSets: [],
-            previewLSet: null
+            previewLSet: null,
+            isProcessingSubject: false
         };
     }
 
@@ -117,6 +119,48 @@ class Contribute extends ProtectedComponent {
         this.setState({previewLSet: lset});
     }
 
+    handleDuplicateLabelingSet(lset: PLabelingSetWithoutLabelings) {
+        // Duplicate Labeling Set
+        const memoSubject = this.state.currentSubject;
+        this.setState({isProcessingSubject: true, currentSubject: null});
+        LabelingSetsService.labelingSetsDuplicate(lset.id).then(
+            newLSet => {
+                this.setState({isProcessingSubject: false, currentSubject: memoSubject});
+
+            }
+        )
+    }
+
+    handleNewLabelingSet(graph: PGraph) {
+        const memoSubject = this.state.currentSubject;
+        this.setState({isProcessingSubject: true, currentSubject: null});
+        LabelingSetsService.labelingSetsNew(graph.id).then(
+            newLSet => {
+                this.setState({isProcessingSubject: false, currentSubject: memoSubject});
+            }
+        );
+    }
+
+    handleEditLabelingSet(lset: PLabelingSetWithoutLabelings) {
+        // Duplicate Labeling Set
+    }
+
+    handleDeleteLabelingSet(lset: PLabelingSetWithoutLabelings) {
+        if(window.confirm(`Do you really want to delete labeling set #${lset.id}`) == false)
+            return
+        const memoSubject = this.state.currentSubject;
+        this.setState({isProcessingSubject: true, currentSubject: null});
+        LabelingSetsService.labelingSetsDeleteLabelingset(lset.id).then(
+            newLSet => {
+                this.setState({isProcessingSubject: false, currentSubject: memoSubject});
+            }
+        );
+    }
+
+    handleShareLabelingSet(lset: PLabelingSetWithoutLabelings) {
+
+    }
+
     openInViewer() {
         // const navigate = useNavigate();
         //console.log(this.props.navigation, this.props.navigation.navigate);
@@ -137,6 +181,20 @@ class Contribute extends ProtectedComponent {
         })
     }
 
+    async autoselect() {
+        const sel = [];
+        if(this.state.subjects) {
+            const nsubs = 24;//this.state.subjects.length;
+            let sub;
+            for(let s=0; s<nsubs; s++) {
+                sub = this.state.subjects[s];
+                let lsets: PLabelingSet[] = await LabelingSetsService.labelingSetsGetLabelingsetsOfUserForASubject(this.user.id, sub.id);
+                sel.push(lsets[0])
+            }
+            this.setState({selectedLabelingSets: sel})
+        }
+    }
+
     render() { 
         const nSubs = this.state.subjects.length;
         const selectedLSets = this.state.selectedLabelingSets.map(lset => {
@@ -151,50 +209,64 @@ class Contribute extends ProtectedComponent {
             </header>
 
             <div className="app-row page">
-                <section className="app-col-small">
-                    <form className="sl-box">
-                        { !this.state.isLoadingDatabases &&
-                            <DatabaseSelect
-                                items={this.state.databases}
-                                itemPredicate={filterDatabase}
-                                itemRenderer={(item: Database, {handleClick, handleFocus}) => {return (<MenuItem key={item.id} text={item.name} onClick={handleClick} onFocus={handleFocus} />)} }
-                                noResults={<MenuItem disabled={true} text="No results." />}
-                                onItemSelect={this.changeDatabase.bind(this)}
-                                //query={this.state.selectedDatabase ? this.state.selectedDatabase.name : ""}
-                                //onActiveItemChange={this.changeDatabase}
-                            >
-                                { this.state.databases &&
-                                    <Button text={this.state.selectedDatabase ? this.state.selectedDatabase.name: ""} rightIcon="double-caret-vertical" icon="database"/>
-                                }
-                            </DatabaseSelect>
-                        }
-                        <InputGroup placeholder="Search..." leftIcon="search" value={this.state.query} onChange={this.queryChanged}/>
-                    </form>
-                    <p style={{textAlign: "right"}}>{nSubs > 1 ? nSubs + ' subjects' : (nSubs === 1 ? '1 subject' : 'No subjects')} </p>
-                
-                    { this.state.isLoadingDatabases ? (
-                        <Spinner></Spinner>
-                    ) : (
-                        <div>
-                            { this.state.selectedDatabase ? (
-                                <ul>
-                                    <SubjectList subjects={this.state.subjects.length > 0 ? this.state.subjects : this.state.selectedDatabase.subjects} onSelectSubject={this.handleSelectSubject}/>
-                                </ul>
-                            ) : (
-                                <p>No subjects.</p>
-                            )}
-                        </div>
-                    )}
-                </section>
-
-
+                <Overlay>
+                    <h1>Sharing</h1>
+                    
+                </Overlay>
                 <section className="app-col-large">
-                    <SubjectView user={this.user} subject={this.state.currentSubject} 
-                        onPreview={this.handleOnPreview.bind(this)}
-                        onSelect={this.handleSelectLabelingSet.bind(this)}></SubjectView>
+                    <div>
+                        <form className="sl-box labelingset-search-bar">
+                            { !this.state.isLoadingDatabases &&
+                                <DatabaseSelect
+                                    items={this.state.databases}
+                                    itemPredicate={filterDatabase}
+                                    itemRenderer={(item: PDatabase, {handleClick, handleFocus}) => {return (<MenuItem key={item.id} text={item.name} onClick={handleClick} onFocus={handleFocus} />)} }
+                                    noResults={<MenuItem disabled={true} text="No results." />}
+                                    onItemSelect={this.changeDatabase.bind(this)}
+                                    //query={this.state.selectedDatabase ? this.state.selectedDatabase.name : ""}
+                                    //onActiveItemChange={this.changeDatabase}
+                                >
+                                    { this.state.databases &&
+                                        <Button text={this.state.selectedDatabase ? this.state.selectedDatabase.name: ""} rightIcon="double-caret-vertical" icon="database"/>
+                                    }
+                                </DatabaseSelect>
+                            }
+                            {/* <InputGroup placeholder="Search..." leftIcon="search" value={this.state.query} onChange={this.queryChanged}/> */}
+                            <SubjectSelect
+                                    items={this.state.subjects}
+                                    itemPredicate={filterSubject}
+                                    itemRenderer={(item: PSubject, {handleClick, handleFocus}) => {return (<MenuItem key={item.id} text={item.name} onClick={handleClick} onFocus={handleFocus} />)} }
+                                    noResults={<MenuItem disabled={true} text="No results." />}
+                                    onItemSelect={this.handleSelectSubject.bind(this)}
+                                    //query={this.state.selectedDatabase ? this.state.selectedDatabase.name : ""}
+                                    //onActiveItemChange={this.changeDatabase}
+                                >
+                                    { this.state.subjects &&
+                                        <Button text={this.state.currentSubject ? this.state.currentSubject.name: ""} rightIcon="double-caret-vertical" icon="person"/>
+                                    }
+                                </SubjectSelect>
+
+                            <Button text="Auto selection" intent="warning" onClick={this.autoselect.bind(this)}/>
+                            <p style={{textAlign: "right"}}>{nSubs > 1 ? nSubs + ' subjects' : (nSubs === 1 ? '1 subject' : 'No subjects')} </p>
+                        </form>                    
+                        { this.state.isLoadingDatabases && <Spinner></Spinner> }
+                    </div>
+
+
+                    { this.state.isProcessingSubject ? <Spinner></Spinner> :
+                        <SubjectView user={this.user} subject={this.state.currentSubject} 
+                            onPreview={this.handleOnPreview.bind(this)}
+                            onSelect={this.handleSelectLabelingSet.bind(this)}
+                            onCreateNew={this.handleNewLabelingSet.bind(this)}
+                            onDuplicate={this.handleDuplicateLabelingSet.bind(this)}
+                            onShare={this.handleShareLabelingSet.bind(this)}
+                            onEdit={this.handleEditLabelingSet.bind(this)}
+                            onDelete={this.handleDeleteLabelingSet.bind(this)}
+                        ></SubjectView>
+                    }
                 </section>
 
-                <section className="app-col-medium" style={{'min-width': 490}}>
+                <section className="app-col-medium" style={{'minWidth': 490}}>
                     <ViewerComponent title="Preview" width={480} height={320} lset={this.state.previewLSet}></ViewerComponent>
                     <Callout>
                         <div>
