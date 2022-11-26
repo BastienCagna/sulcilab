@@ -4,9 +4,12 @@ from warnings import warn
 import nibabel as nb
 import os.path as op
 from os import makedirs
-from soma import aims
+import sys
+try:
+    from soma import aims
+except:
+    print("soma is not installed")
 import numpy as np
-
 
 
 def aims_read_and_convert_to_nibabel(mesh_f):
@@ -24,7 +27,10 @@ def read_mesh(mesh_f):
     try:
         return nb.read(mesh_f)
     except:
-        return aims_read_and_convert_to_nibabel(mesh_f)
+        if 'aims' in sys.modules:
+            return aims_read_and_convert_to_nibabel(mesh_f)
+        else:
+            raise IOError("Cannot load " + mesh_f)
 
 def check_dir(path):
     path = op.abspath(path)
