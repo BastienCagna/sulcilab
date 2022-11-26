@@ -18,3 +18,12 @@ sulcilab_web/api
 *.css.map
 
 tmp/
+sulcilab_web/App.css.map
+sulcilab_web/index.css.map
+sulcilab_web/components/viewer.css.map
+sulcilab_web/protected/contribute/contribute.css.map
+sulcilab_web/protected/contribute/components/subjectcard.css.map
+sulcilab_web/protected/contribute/components/subjectlist.css.map
+sulcilab_web/protected/edit/edit.css.map
+sulcilab_web/public/home/home.css.map
+sulcilab_web/public/learn/learn.css.map

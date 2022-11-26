@@ -1,7 +1,7 @@
 import {PointOfView, Viewer} from './viewer.js';
 import {LogMessageType, Logger, DEFAULT_LOG_MESSAGE_TIMEOUT, Loggable} from './logger.js';
 import { randNInt } from './utils.js';
-import * as THREE from 'https://cdn.skypack.dev/three@v0.135.0';
+import * as THREE from 'three';
 
 
 const DEFAULT_MESH_COLOR = 0xffaaaa;

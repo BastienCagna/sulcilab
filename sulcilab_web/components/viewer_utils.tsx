@@ -1,5 +1,5 @@
 import { PColor } from "../api";
-import * as THREE from 'https://cdn.skypack.dev/three@v0.135.0';
+import * as THREE from 'three';
 
 
 function computeOffset(vertices: any) {

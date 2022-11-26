@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# mv $DATA_ROOT/db.sqlite3 $DATA_ROOT/db.sqlite3.back;
-
 # if which node > /dev/null
 # then
 #     echo "node is installed, skipping..."
@@ -14,6 +12,7 @@
 
 # # python -m venv venv
 # # . venv/bin/activate
+
 # python setup.py develop --user
 # npm install
 
@@ -28,4 +27,4 @@ python cli/install_nomenclatures.py ./data/labels.csv ./data/sulcal_root_colors.
 npm run api-build
 
 # Setup at Neurospin
-python cli/import_db.py /neurospin/dico/data/bv_databases/human/manually_labeled/archi Archi archi 3.3 session1_manual Human
+# python cli/import_db.py /neurospin/dico/data/bv_databases/human/manually_labeled/archi Archi archi 3.3 session1_manual Human

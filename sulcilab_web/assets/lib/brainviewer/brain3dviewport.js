@@ -1,12 +1,12 @@
 //import * as THREE from './threejs.js';
 //import * as THREE from 'https://cdn.skypack.dev/pin/three@v0.135.0-pjGUcRG9Xt70OdXl97VF/mode=imports,min/optimized/three.js';
-import * as THREE from 'https://cdn.skypack.dev/three@v0.135.0';
-import { OrbitControls } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/controls/OrbitControls.js';
-import { EffectComposer } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/postprocessing/RenderPass';
-import { OutlinePass } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/postprocessing/OutlinePass';
-import { ShaderPass } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/postprocessing/ShaderPass';
-import { FXAAShader } from 'https://cdn.skypack.dev/three@v0.135.0/examples/jsm/shaders/FXAAShader';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
 
 
 export class Brain3DViewport {

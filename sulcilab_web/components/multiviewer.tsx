@@ -1,7 +1,6 @@
 import React from "react";
 import './viewer.css';
 import {v4 as uuidv4} from 'uuid';
-import * as THREE from 'https://cdn.skypack.dev/three@v0.135.0';
 
 import { Viewer } from "../assets/lib/brainviewer/viewer";
 import { LabelingSetsService, PLabel, PLabeling } from '../api';

@@ -1,4 +1,4 @@
-# SulciLab Backend
+# SulciLab
 SulciLab is a web based application for shared brain sulci labelling.
 
 
@@ -17,8 +17,6 @@ A ReactJS web frontend to connect to the Sulcilab database and labelize graphs o
 ## Getting started
 ```shell
 git clone https://github.com/BastienCagna/sulcilab_frontend.git
-python3 -m venv venv
-. venv/bin/activate
 ./setup.sh
 
 # Start the backend
@@ -94,3 +92,12 @@ def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 
 ## Notes
+
+
+## Troubleshooting
+
+If the watch fail limit is reached, before opening bv bash:
+``̀ shell
+echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```

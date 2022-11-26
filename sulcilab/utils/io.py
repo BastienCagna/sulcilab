@@ -4,7 +4,27 @@ from warnings import warn
 import nibabel as nb
 import os.path as op
 from os import makedirs
+from soma import aims
+import numpy as np
 
+
+
+def aims_read_and_convert_to_nibabel(mesh_f):
+    aims_mesh = aims.read(mesh_f)
+    # header = aims_mesh.header()
+    darrays = [None] * aims_mesh.size() * 2
+    for i in range(aims_mesh.size()):
+        vertices = np.array([x[:] for x in aims_mesh.vertex(i)]).tolist()
+        polygons = np.array([x[:] for x in aims_mesh.polygon(i)]).tolist()
+        darrays[i * 2] = nb.gifti.GiftiDataArray(vertices)
+        darrays[i * 2 + 1] = nb.gifti.GiftiDataArray(polygons)
+    return nb.GiftiImage(darrays=darrays)
+
+def read_mesh(mesh_f):
+    try:
+        return nb.read(mesh_f)
+    except:
+        return aims_read_and_convert_to_nibabel(mesh_f)
 
 def check_dir(path):
     path = op.abspath(path)
@@ -297,7 +317,7 @@ def read_arg(file, with_meshes=True):
         gii_f = op.join(file[:-3] + "data", "aims_Tmtktri.gii")
         if not op.isfile(gii_f):
             raise IOError(gii_f + " does not exist. Cannot load graph meshes.")
-        gii = nb.load(gii_f)
+        gii = read_mesh(gii_f) #nb.load(gii_f)
         return metadata, nodes, edges, gii
     else:
         return metadata, nodes, edges, None

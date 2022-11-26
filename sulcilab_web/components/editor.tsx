@@ -1,13 +1,9 @@
 import React from "react";
 import './editor.css';
-import {v4 as uuidv4} from 'uuid';
-import * as THREE from 'https://cdn.skypack.dev/three@v0.135.0';
 
-import { Viewer } from "../assets/lib/brainviewer/viewer";
 import { LabelingSetsService, PColor, PLabel, PLabeling,} from '../api';
 import { Button, Icon, Slider, Spinner, Tab, TabId, Tabs } from "@blueprintjs/core";
 import MultiViewerComponent from "./multiviewer";
-import { render } from "@testing-library/react";
 import { checkBackgrounColor, strColor, threeJsColor } from './viewer_utils'
 
 

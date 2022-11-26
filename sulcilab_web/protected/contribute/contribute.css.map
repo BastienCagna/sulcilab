@@ -1,9 +1,1 @@
-{
-    "version": 3,
-    "mappings": "AAAA,AACI,uBADmB,GACjB,CAAC,CAAC;EACA,OAAO,EAAE,YAAY;CACxB",
-    "sources": [
-        "contribute.scss"
-    ],
-    "names": [],
-    "file": "contribute.css"
-}
+{"version":3,"sources":["contribute.scss","contribute.css"],"names":[],"mappings":"AACI;EACI,qBAAA;ACAR","file":"contribute.css"}

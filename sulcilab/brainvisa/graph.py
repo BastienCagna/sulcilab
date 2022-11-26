@@ -13,6 +13,8 @@ import enum
 import ujson
 
 import nibabel as nb
+
+from sulcilab.utils.io import read_mesh
 # from .subject import PSubject
 # from .fold import PFold
 
@@ -59,7 +61,8 @@ class Graph(Base, SulciLabBase):
         return op.join(data_path, "aims_Tmtktri.gii")
 
     def load_mesh(self, type="hemi"):
-        gii = nb.load(self.get_mesh_path(type=type))
+        #gii = nb.load(self.get_mesh_path(type=type))
+        gii = read_mesh(self.get_mesh_path(type=type))
         return {
             'type': type,
             'vertices': gii.darrays[0].data.tolist(),
@@ -67,7 +70,8 @@ class Graph(Base, SulciLabBase):
         }
 
     def load_folds_meshes(self):
-        gii = nb.load(self.get_folds_meshes_path())
+        #gii = nb.load(self.get_folds_meshes_path())
+        gii = read_mesh(self.get_folds_meshes_path())
         data = []
         for f in range(0, len(gii.darrays), 2):
             data.append({
