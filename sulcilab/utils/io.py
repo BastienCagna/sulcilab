@@ -25,7 +25,7 @@ def aims_read_and_convert_to_nibabel(mesh_f):
 
 def read_mesh(mesh_f):
     try:
-        return nb.read(mesh_f)
+        return nb.load(mesh_f)
     except:
         if 'aims' in sys.modules:
             return aims_read_and_convert_to_nibabel(mesh_f)
