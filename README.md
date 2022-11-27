@@ -92,7 +92,12 @@ def read(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 
 ## Notes
+### Expose dev server to network
+sudo ufw allow 3000
+npm run web-start --host 0.0.0.0
 
+sudo ufw allow 5000
+uvicorn sulcilab.main:app --reload --host 0.0.0.0 --port 5000
 
 ## Troubleshooting
 

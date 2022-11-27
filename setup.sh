@@ -1,20 +1,26 @@
 #!/bin/bash
 
-# if which node > /dev/null
-# then
-#     echo "node is installed, skipping..."
-# else
-#     # add deb.nodesource repo commands 
-#     # install node
-#     echo "install node"
-#     ./install_node.sh
-# fi
+if which node > /dev/null
+then
+    echo "node is installed, skipping..."
+else
+    # add deb.nodesource repo commands 
+    # install node
+    echo "install node"
+    ./install_node.sh
+fi
 
 # # python -m venv venv
 # # . venv/bin/activate
 
-# python setup.py develop --user
-# npm install
+if test -f ".env"; then
+    echo ".env file already exist."
+else
+    cp '.env.dist' '.env'
+fi
+
+python setup.py develop --user
+npm install
 
 mv db.sqlite db.sqlite.back
 # cp db.sqlite.back db.sqlite
