@@ -27,9 +27,9 @@ def read_mesh(mesh_f):
     try:
         return nb.load(mesh_f)
     except:
-        if 'aims' in sys.modules:
+        try:
             return aims_read_and_convert_to_nibabel(mesh_f)
-        else:
+        except:
             raise IOError("Cannot load " + mesh_f)
 
 def check_dir(path):

@@ -57,6 +57,7 @@ export default class ViewerComponent extends React.Component {
         LabelingSetsService.labelingSetsGetLabelingsetData(this.props.lset.id).then(
             (data: any)=> {
                 if(this.viewer) {
+                    console.log("received data", data)
                     this.setState({
                         currentNomenclature: data.nomenclature,
                         loadingMessage: 'Adding meshes...'
@@ -99,16 +100,19 @@ export default class ViewerComponent extends React.Component {
                         // Set the mesh color and add the labeling to mesh user data
                         for(let o=0; o < sceneObjects.length; o++) {
                             mesh = sceneObjects[o];
+                            
                             // If the object has a mesh index
                             if(mesh.userData && mesh.userData.meshIndex != undefined && mesh.userData.meshIndex == meshIndex) {
                                 label = getLabel(data.nomenclature, labeling.label_id); //labeling.label.color;
                                 if(label) {
                                     color = label.color;
                                     mesh.material.color = threeJsColor(color);
-                                    mesh.userData['labeling'] = labeling;
-                                    mesh.userData['originalLabeling'] = {...labeling}; // deep copy
                                     mesh.userData['originalColor'] = {...color}; // deep copy
+                                } else {
+                                    mesh.userData['originalColor'] = {...mesh.material.color}; // deep copy
                                 }
+                                mesh.userData['labeling'] = labeling;
+                                mesh.userData['originalLabeling'] = {...labeling}; // deep copy
                                 break;
                             }
                         }
@@ -172,7 +176,7 @@ export default class ViewerComponent extends React.Component {
                 // Update object label id
                 object.userData.labeling.label_id = label.id;
                 // Check if at least one labeling has changed
-                if(object.userData.originalLabeling.label_id != label.id) {
+                if(object.userData.originalLabeling || object.userData.originalLabeling.label_id != label.id) {
                     this.setState({hasChanged: true});
                 } else {
                     this.checkHasChanged();

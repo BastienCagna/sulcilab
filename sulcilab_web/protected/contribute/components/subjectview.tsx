@@ -1,7 +1,8 @@
-import { Button, Callout, Card, MenuItem, Overlay, Tag } from "@blueprintjs/core";
+import { Button, Callout, Card, MenuItem, Overlay, PortalProvider, Tag } from "@blueprintjs/core";
 import { MultiSelect2, Select2 } from "@blueprintjs/select";
+import userEvent from "@testing-library/user-event";
 import React from "react";
-import { LabelingSetsService, PLabelingSet, PLabelingSetWithoutLabelings, PUser, UsersService } from "../../../api";
+import { LabelingSetsService, PLabelingSet, PUser, SharedLabelingSetsService, UsersService } from "../../../api";
 import './subjectview.css';
 
 const UserSelect = MultiSelect2.ofType<PUser>();
@@ -22,10 +23,13 @@ function filterUser(query: string, user: PUser, _index:any, exactMatch:any) {
         return `${subjectStr}`.indexOf(normalizedQuery) >= 0;
     }
 }
+
+
 /*
     Props
     =====
     lset:
+    disabled: bool
 */
 class SharingOverlay extends React.Component {
 
@@ -38,17 +42,49 @@ class SharingOverlay extends React.Component {
         this.state = {
             isLoading: false,
             isOpen: false,
-            users: [],
-            selectedUsers: []
+            sharingUsers: [],
+            allUsers: [],
+            notSharedUsers: null,
+            originalSharing: null,
+            hasChanged: false
         }
+    }
+
+    setUserLists() {
+        SharedLabelingSetsService.sharedLabelingSetsSharingRecipient(this.props.lset.id).then(
+            users => {
+                // TODO: do this on server side
+                const notsharing_users = [];
+                let found;
+                for(let user of this.state.allUsers) {
+                    found = users.some(u => { return u.id == user.id });
+                    if(!found) {
+                        notsharing_users.push(user);
+                    }
+                }
+                
+                this.setState({
+                    sharingUsers: users,
+                    originalSharing: [...users],
+                    hasChanged: false,
+                    notSharedUsers: notsharing_users
+                })
+            }
+        )
     }
 
     componentDidMount() {
         UsersService.usersListAll().then(
             users => {
-                this.setState({users: users})
+                this.setState({allUsers: users})
             }
         )
+    }
+
+    componentDidUpdate(prevProps: Readonly<{}>): void {
+        if(prevProps.lset != this.props.lset || !this.state.notSharedUsers) {
+            this.setUserLists();
+        }
     }
 
     toggleOverlay() {
@@ -56,43 +92,63 @@ class SharingOverlay extends React.Component {
     }
 
     selectUser(user: PUser) {
-        const users = this.state.selectedUsers;
+        const users = this.state.sharingUsers;
+        const nusers = this.state.notSharedUsers;
         users.push(user);
-        this.setState({selectedUsers: users})
+        nusers.splice(nusers.indexOf(user));
+        this.setState({sharingUsers: users, notSharedUsers: nusers, hasChanged: this.hasChanged()})
+    }
+
+    hasChanged() {
+        let all_found;
+        if(this.state.sharingUsers) {
+            all_found = this.state.originalSharing.every(u => {
+                return this.state.sharingUsers.indexOf(u) >= 0;
+            });
+            // If all original users are in the current and the original and the current have same length
+            // Then there is no change
+            return !(all_found && this.state.originalSharing.length == this.state.sharingUsers.length);
+        }
+        return false;
+    }
+
+    save() {
+        if(this.hasChanged()) {
+            const uids = [];
+            for(let user of this.state.sharingUsers) {
+                uids.push(user.id)
+            }
+            SharedLabelingSetsService.sharedLabelingSetsUpdateSharings(
+                this.props.lset.id,
+                uids
+            ).then(nothing => {
+                this.setUserLists();
+            })
+        }
+        // else, nothing to do
     }
 
     render() {
+        const lset = this.props.lset;
         return <div>
-            <Button icon="share" intent="primary" onClick={() => {this.toggleOverlay()}} />
-            <Overlay isOpen={this.state.isOpen} onClose={this.toggleOverlay}>
+            <Button icon="share" intent="primary" onClick={() => {this.toggleOverlay()}} disabled={this.props.disabled}/>
+            <Overlay isOpen={this.state.isOpen} onClose={() => {this.toggleOverlay()}}>
                 <Card interactive={true} className="sharing-overlay">
-                    <h3>I'm an Overlay!</h3>
+                    <h3>Sharing #{lset.id}</h3>
                     <p>
-                        This is a simple container with some inline styles to position it on the screen. Its CSS
-                        transitions are customized for this example only to demonstrate how easily custom
-                        transitions can be implemented.
-                    </p>
-                    <p>
-                        Click the "Focus button" below to transfer focus to the "Show overlay" trigger button
-                        outside of this overlay. If persistent focus is enabled, focus will be constrained to the
-                        overlay. Use the key to move to the next focusable element to illustrate
-                        this effect.
-                    </p>
-                    <p>
-                        Click the "Make me scroll" button below to make this overlay's content really tall, which
-                        will make the overlay's container (but not the page) scrollable
+                        This graph is shared to:
                     </p>
                     <br />
                     <form>
                         <UserSelect
-                            items={this.state.users}
-                            selectedItems={this.state.selectedUsers}
+                            items={this.state.notSharedUsers}
+                            selectedItems={this.state.sharingUsers}
                             itemPredicate={filterUser}
                             itemRenderer={(item: PUser, {handleClick, handleFocus}) => {
-                                return (<MenuItem key={item.id} text={item.username} onClick={handleClick} onFocus={handleFocus} />)} 
+                                return (<MenuItem key={item.id} text={item.username + ' (' + item.email + ')'} onClick={handleClick} onFocus={handleFocus} />)} 
                             }
                             tagRenderer={(item: PUser) => {
-                                return (<MenuItem key={item.id} text={item.username} />)} 
+                                return (<MenuItem key={item.id} text={item.username + ' (' + item.email + ')'} />)} 
                             }
                             noResults={<MenuItem disabled={true} text="No results." />}
                             onItemSelect={this.selectUser.bind(this)}
@@ -106,6 +162,11 @@ class SharingOverlay extends React.Component {
                         <Button intent="danger" onClick={() => {this.toggleOverlay(); }}>
                             Close
                         </Button>
+                        { this.state.hasChanged && 
+                            <Button intent="success" onClick={() => {this.save(); }}>
+                                Save
+                            </Button>
+                        }
                     </div>
                 </Card>
             </Overlay>
@@ -119,6 +180,7 @@ class SharingOverlay extends React.Component {
     =====
     graph:
     lsets:
+    user:
 */
 function LabelingSetListItem(props: any) {
     let rows;
@@ -127,11 +189,17 @@ function LabelingSetListItem(props: any) {
         rows = []
     }
     else {
-        rows = props.lsets.filter(lset => {return lset.graph.id == graph.id}).map(lset => {return (
+        rows = props.lsets.filter(lset => {return lset.graph.id == graph.id}).map(lset => {
+            const allowEdit = props.user.is_admin || props.user.id == lset.author_id;
+            return (
             <li key={lset.id}>
                 <Tag>#{lset.id}</Tag>
-                <Tag>Author ID: {lset.author_id}</Tag>
-                <Tag>Creation: {lset.created_at}</Tag>
+                <Tag>{lset.author.username}</Tag>
+                { lset.updated_at && lset.updated_at != lset.created_a ?
+                    <Tag>Creation: {lset.created_at}</Tag>
+                  :
+                    <Tag>Last update: {lset.created_at}</Tag>
+                }
                 { lset.updated_at && 
                     <Tag>Last update: {lset.updated_at}</Tag>
                 }
@@ -140,11 +208,11 @@ function LabelingSetListItem(props: any) {
                 }
                 <span>{lset.comment}</span>
                 <div className="controls">
-                    <Button icon="edit" intent="primary" onClick={() => { if(props.onEdit) props.onEdit(lset);} }/>
+                    <Button icon="edit" intent="primary" onClick={() => { if(props.onEdit) props.onEdit(lset);} } disabled={!allowEdit}/>
                     {/* <Button icon="share" intent="primary" onClick={() => { if(props.onShare) props.onShare(lset);} }/> */}
-                    <SharingOverlay lset={lset}></SharingOverlay>
+                    <SharingOverlay lset={lset} disabled={!allowEdit}></SharingOverlay>
                     <Button icon="duplicate" intent="primary" onClick={() => { if(props.onDuplicate) props.onDuplicate(lset);} }/>
-                    <Button icon="trash" intent="danger" onClick={() => { if(props.onDelete) props.onDelete(lset);} }/>
+                    <Button icon="trash" intent="danger" onClick={() => { if(props.onDelete) props.onDelete(lset);} } disabled={!allowEdit}/>
                     <Button icon="eye-open" intent="success" onClick={() => { if(props.onPreview) props.onPreview(lset);} }/>
                     <Button icon="add-to-artifact" intent="success" onClick={() => { if(props.onSelect) props.onSelect(lset);} }/>
                     {/* <Button icon="duplicate" text="Duplicate" onClick={() => { if(props.onPreview) props.onDuplicate(lset);} }/>
@@ -176,6 +244,7 @@ function LabelingSetListItem(props: any) {
     subject: should be remove and use lset.graph.subject
     lset:
     onSelect:
+    user:
 */
 export default class SubjectView extends React.Component {
 
@@ -191,16 +260,24 @@ export default class SubjectView extends React.Component {
         }
     }
 
+    reload() {
+        const sub = this.props.subject;
+        const user = this.props.user;
+        if(sub && user) {
+            this.setState({isLoading: true, lsets: []});
+            LabelingSetsService.labelingSetsGetLabelingsetsOfUserForASubject(user.id, sub.id).then((lsets: PLabelingSet[]) => {
+                this.setState({lsets: lsets, isLoading: false})
+            });
+        } else {
+            this.setState({lsets: []});
+        }
+    }
+
     componentDidUpdate(prevProps: any) {
         const sub = this.props.subject;
         const user = this.props.user;
         if(prevProps.subject != sub || prevProps.user != user) {
-            if(sub && user) {
-                this.setState({isLoading: true, lsets: []});
-                LabelingSetsService.labelingSetsGetLabelingsetsOfUserForASubject(user.id, sub.id).then((lsets: PLabelingSet[]) => {
-                    this.setState({lsets: lsets, isLoading: false})
-                });
-            }
+            this.reload();
         }
     }
 
@@ -212,7 +289,7 @@ export default class SubjectView extends React.Component {
         if(this.props.subject) {
             for(let graph of this.props.subject.graphs) {
                 rows.push(
-                    <li key={graph.id}><LabelingSetListItem graph={graph} lsets={lsets} 
+                    <li key={graph.id}><LabelingSetListItem graph={graph} lsets={lsets} user={this.props.user}
                                 onPreview={this.props.onPreview} 
                                 onSelect={this.props.onSelect} 
                                 onCreateNew={this.props.onCreateNew}

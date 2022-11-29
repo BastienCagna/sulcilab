@@ -60,6 +60,11 @@ export default class Home extends React.Component {
                         <Link to="signout">Log out</Link>
                     </div>
                     }
+                    { user && user.is_admin &&
+                        <Link to="admin" className="admin">
+                        <h3>Admin</h3>
+                        </Link>
+                    }
                     </nav>
                 </section>
                 {/* <section>

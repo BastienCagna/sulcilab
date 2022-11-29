@@ -28,12 +28,13 @@ class LabelingSet(Base, SulciLabBase):
     __tablename__ = "labelingsets"
 
     author_id = Column(Integer, ForeignKey("users.id"))
-    # author = relationship("User", back_populates="labelingsets", uselist=False)
+    author = relationship("User", uselist=False)
     graph_id = Column(Integer, ForeignKey("graphs.id"))
     graph = relationship("Graph", uselist=False)
     nomenclature_id = Column(Integer, ForeignKey("nomenclatures.id"))
     nomenclature = relationship("Nomenclature", uselist=False)
     labelings = relationship("Labeling", back_populates="labelingset")
+    # sharings = relationship("SharedLabelingSet", back_populates="labelingset")
 
     # TODO: reset update date each time that a labeling is updated
     
@@ -88,14 +89,16 @@ class PLabelingSetBase(BaseModel):
     graph_id: int
     nomenclature_id: int
     comment: Union[str, None] = ""
+    # sharings: Union["PSharedLabelingSetBase", None] = []
 
 class PLabelingSetCreate(PLabelingSetBase):
     pass
 class PLabelingSetWithoutLabelings(PLabelingSetBase, SulciLabReadingModel):
     # author: 'PUserBase'
     graph: "PGraph"
+    author: "PUserBase"
     # nomenclature: "PNomenclature"
-class PLabelingSet(PLabelingSetWithoutLabelings):
+class PLabelingSet(PLabelingSetBase):
     labelings: List["PLabeling"] = []
     parent: Union[PLabelingSetBase, None] = None
 
@@ -109,8 +112,11 @@ from sulcilab.core.user import PUserBase, get_user_by_token
 from .nomenclature import Nomenclature, PNomenclature
 from .graph import Graph, PGraph
 from .labeling import Labeling, PLabeling, PLabelingBase
+from sulcilab.brainvisa.sharedlabelingset import SharedLabelingSet, PSharedLabelingSetBase
 PLabelingSet.update_forward_refs()
 PLabelingSetWithoutLabelings.update_forward_refs()
+
+# PLabelingSetWithoutLabelings.update_forward_refs()
 
 ###################
 # CRUD Operations #
@@ -150,11 +156,22 @@ def get_labelingsets_of_user_for_a_subject(user_id: int, sub_id: int, skip: int 
     sub = crud.get(db, Subject, sub_id)
 
     gids = list(g.id for g in sub.graphs)
-    query = db.query(LabelingSet).filter(LabelingSet.graph_id.in_(gids)).offset(skip)
-    if limit:
-        query = query.limit(limit)
+    # FIXME: .in_ seems to not work
+    #query = db.query(LabelingSet).filter(LabelingSet.graph_id.in_(gids)).offset(skip)
+    all_lsets = crud.get_all(db, LabelingSet)
+    lsets = []
+    for lset in all_lsets:
+        if lset.author_id == user_id:
+            lsets.append(lset)
+    sharings = crud.get_by(db, SharedLabelingSet, target_id=user_id)
+    for sharing in sharings:
+        lsets.append(sharing.labelingset)
+
+    # if limit:
+    #     query = query.limit(limit)
     
-    return sqlalchemy_to_pydantic_instance(query.all(), PLabelingSetWithoutLabelings)
+    # lsets = query.all()
+    return sqlalchemy_to_pydantic_instance(lsets, PLabelingSetWithoutLabelings)
 
 
 @router.get("/demo", response_model=PLabelingSetWithoutLabelings)
@@ -194,7 +211,7 @@ def get_labelingset_data(lset_id: int, db: Session = Depends(get_db)):
 # FIXME: Following functions failed to generate API description 
 # (probably due to bad matching between oupt and response_models or input pydantic models)
 
-@router.post("/new", dependencies=[Depends(JWTBearer())], response_model=PLabelingSet)
+@router.post("/new", dependencies=[Depends(JWTBearer())], response_model=PLabelingSetBase)
 def new(graph_id: int, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     cuser: PUser = get_user_by_token(db, token)
 
@@ -225,7 +242,7 @@ def new(graph_id: int, token: str = Depends(oauth2_scheme), db: Session = Depend
             labelingset_id=lset.id
         )
     db.commit()
-    return lset
+    return sqlalchemy_to_pydantic_instance(lset, PLabelingSetBase)#lset
 
 @router.post("/duplicate", dependencies=[Depends(JWTBearer())], response_model=PLabelingSet)
 def duplicate(lset_id: int, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -259,7 +276,7 @@ def duplicate(lset_id: int, token: str = Depends(oauth2_scheme), db: Session = D
         db.add(db_item)
         new_labelings.append(db_item)
     db.commit()
-    return new_lset#crud.get(db, LabelingSet, new_lset.id)
+    return sqlalchemy_to_pydantic_instance(new_lset, PLabelingSetWithoutLabelings)#new_lset#crud.get(db, LabelingSet, new_lset.id)
 
 
 @router.post("/", dependencies=[Depends(JWTBearer())], response_model=PLabelingSet)
@@ -327,3 +344,4 @@ def delete_labelingset(lset_id: int, token: str = Depends(oauth2_scheme), db: Se
     
     crud.delete(db, LabelingSet, lset.id)
     return None
+

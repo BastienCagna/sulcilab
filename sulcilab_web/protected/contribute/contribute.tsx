@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefObject } from "react";
 import './contribute.css';
 
 import { Link, useNavigate } from "react-router-dom";
@@ -40,10 +40,12 @@ function filterSubject(query: string, subject: PSubject, _index:any, exactMatch:
 }
 
 class Contribute extends ProtectedComponent {
-    
+    subjectView = null; //:RefObject<SubjectView> = React.createRef();
+
     constructor(props: any) {
         super(props);
         this.reset();
+        this.subjectView = React.createRef();
     }
 
     reset() {
@@ -85,14 +87,15 @@ class Contribute extends ProtectedComponent {
         //console.log('query:', db.subjects);
         if(db) {
             this.setState({
-                subjects: db.subjects/*.filter((subject) => {
+                subjects: db.subjects,/*.filter((subject) => {
                     return filterSubject(this.state.query, subject, db)
                 })*/
+                currentSubject: db.subjects[0]
             })
         }
     };
 
-    async changeDatabase(db: PDatabase | ICreateNewItem | null, isCreateNewItem: boolean) {
+    async changeDatabase(db: PDatabase | null) {
         this.setState({selectedDatabase: db, currentSubject: null});
         this.filterSubjects(db as PDatabase);
     };
@@ -121,22 +124,21 @@ class Contribute extends ProtectedComponent {
 
     handleDuplicateLabelingSet(lset: PLabelingSetWithoutLabelings) {
         // Duplicate Labeling Set
-        const memoSubject = this.state.currentSubject;
-        this.setState({isProcessingSubject: true, currentSubject: null});
+        this.setState({isProcessingSubject: true});
         LabelingSetsService.labelingSetsDuplicate(lset.id).then(
             newLSet => {
-                this.setState({isProcessingSubject: false, currentSubject: memoSubject});
-
+                this.setState({isProcessingSubject: false});
+                this.subjectView.current.reload();
             }
         )
     }
 
     handleNewLabelingSet(graph: PGraph) {
-        const memoSubject = this.state.currentSubject;
-        this.setState({isProcessingSubject: true, currentSubject: null});
+        this.setState({isProcessingSubject: true});
         LabelingSetsService.labelingSetsNew(graph.id).then(
             newLSet => {
-                this.setState({isProcessingSubject: false, currentSubject: memoSubject});
+                this.setState({isProcessingSubject: false});
+                this.subjectView.current.reload();
             }
         );
     }
@@ -148,11 +150,11 @@ class Contribute extends ProtectedComponent {
     handleDeleteLabelingSet(lset: PLabelingSetWithoutLabelings) {
         if(window.confirm(`Do you really want to delete labeling set #${lset.id}`) == false)
             return
-        const memoSubject = this.state.currentSubject;
-        this.setState({isProcessingSubject: true, currentSubject: null});
+        this.setState({isProcessingSubject: true});
         LabelingSetsService.labelingSetsDeleteLabelingset(lset.id).then(
             newLSet => {
-                this.setState({isProcessingSubject: false, currentSubject: memoSubject});
+                this.setState({isProcessingSubject: false});
+                this.subjectView.current.reload();
             }
         );
     }
@@ -181,19 +183,19 @@ class Contribute extends ProtectedComponent {
         })
     }
 
-    async autoselect() {
-        const sel = [];
-        if(this.state.subjects) {
-            const nsubs = 24;//this.state.subjects.length;
-            let sub;
-            for(let s=0; s<nsubs; s++) {
-                sub = this.state.subjects[s];
-                let lsets: PLabelingSet[] = await LabelingSetsService.labelingSetsGetLabelingsetsOfUserForASubject(this.user.id, sub.id);
-                sel.push(lsets[0])
-            }
-            this.setState({selectedLabelingSets: sel})
-        }
-    }
+    // async autoselect() {
+    //     const sel = [];
+    //     if(this.state.subjects) {
+    //         const nsubs = 24;//this.state.subjects.length;
+    //         let sub;
+    //         for(let s=0; s<nsubs; s++) {
+    //             sub = this.state.subjects[s];
+    //             let lsets: PLabelingSet[] = await LabelingSetsService.labelingSetsGetLabelingsetsOfUserForASubject(this.user.id, sub.id);
+    //             sel.push(lsets[0])
+    //         }
+    //         this.setState({selectedLabelingSets: sel})
+    //     }
+    // }
 
     render() { 
         const nSubs = this.state.subjects.length;
@@ -246,24 +248,23 @@ class Contribute extends ProtectedComponent {
                                     }
                                 </SubjectSelect>
 
-                            <Button text="Auto selection" intent="warning" onClick={this.autoselect.bind(this)}/>
+                            {/* <Button text="Auto selection" intent="warning" onClick={this.autoselect.bind(this)}/> */}
                             <p style={{textAlign: "right"}}>{nSubs > 1 ? nSubs + ' subjects' : (nSubs === 1 ? '1 subject' : 'No subjects')} </p>
                         </form>                    
                         { this.state.isLoadingDatabases && <Spinner></Spinner> }
                     </div>
 
 
-                    { this.state.isProcessingSubject ? <Spinner></Spinner> :
-                        <SubjectView user={this.user} subject={this.state.currentSubject} 
-                            onPreview={this.handleOnPreview.bind(this)}
-                            onSelect={this.handleSelectLabelingSet.bind(this)}
-                            onCreateNew={this.handleNewLabelingSet.bind(this)}
-                            onDuplicate={this.handleDuplicateLabelingSet.bind(this)}
-                            onShare={this.handleShareLabelingSet.bind(this)}
-                            onEdit={this.handleEditLabelingSet.bind(this)}
-                            onDelete={this.handleDeleteLabelingSet.bind(this)}
-                        ></SubjectView>
-                    }
+                    { this.state.isProcessingSubject && <Spinner></Spinner> }
+                    <SubjectView ref={this.subjectView} user={this.user} subject={this.state.currentSubject} 
+                        onPreview={this.handleOnPreview.bind(this)}
+                        onSelect={this.handleSelectLabelingSet.bind(this)}
+                        onCreateNew={this.handleNewLabelingSet.bind(this)}
+                        onDuplicate={this.handleDuplicateLabelingSet.bind(this)}
+                        onShare={this.handleShareLabelingSet.bind(this)}
+                        onEdit={this.handleEditLabelingSet.bind(this)}
+                        onDelete={this.handleDeleteLabelingSet.bind(this)}
+                    ></SubjectView>
                 </section>
 
                 <section className="app-col-medium" style={{'minWidth': 490}}>

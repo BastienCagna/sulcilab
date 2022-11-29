@@ -73,6 +73,7 @@ def get_user_by_username(db: Session, username: str):
     return db.query(User).filter(User.username == username).first()
 
 def create_user(db: Session, item: PUserCreate):
+    print("create", item.username, item.email, item.password)
     hashed_password = item.password + "notreallyhashed"
     db_user = User(
         email=item.email,

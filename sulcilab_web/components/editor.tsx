@@ -22,6 +22,18 @@ class LabelView extends React.Component {
     }
 }
 
+function HelpPanel(props) {
+    return (<div className="editor-help-panel">
+            <h4>Controls</h4>
+            <ul>
+                <li>Left click: select + change current label</li>
+                <li>Right click: just select</li>
+                <li>"l": apply current label</li>
+                <li>"k": clear selection</li>
+            </ul>
+        </div>)
+}
+
 class LabelDetailedView extends React.Component {
     render(){
         const label: PLabel = this.props.label;
@@ -30,6 +42,7 @@ class LabelDetailedView extends React.Component {
         }
         return <div style={{backgroundColor: strColor(label.color), color: checkBackgrounColor(label.color, "black", "white")}}>
             <h3>{label.shortname}</h3>
+            <p>ID: #{label.id} </p>
             <h4>{label.fr_name}</h4>
             <p>{label.fr_description}</p>
         </div>
@@ -110,7 +123,8 @@ export default class EditorComponent extends MultiViewerComponent {
     init() {
         super.init({
             selectedTabId:"nomenclature",
-            showPanel:true
+            showPanel:true,
+            currentObjects: []
         });
     }
     
@@ -120,12 +134,26 @@ export default class EditorComponent extends MultiViewerComponent {
         })
     }
 
+    // onCurrentLabelChangedHandler(label: PLabel) {
+    //     super.onCurrentLabelChangedHandler(label);
+    //     const objects = [];
+    //     let sel;
+    //     for(let viewer of this.viewers) {
+    //         sel = viewer.getSelection();
+    //         if(sel.length > 0) {
+    //             objects.push(sel[0]);
+    //             console.log("selected", sel[0]);
+    //         }
+    //     }
+    //     this.setState({currentObjects: objects})
+    // }
+
     /*
     * Cast labeling order to each viewer
     */
     labelize(label: PLabel) {
-        console.log("labelize with", label);
         for(let viewerRef of this.viewerComponents) {
+            console.log("labelize", label);
             viewerRef.current.labelize(label);
         }
     }
@@ -146,7 +174,7 @@ export default class EditorComponent extends MultiViewerComponent {
     // }
     render() {
         const viewer = super.render();
-
+        //const oViews = this.state.currentObjects.map(obj => {return <li key={obj.id}><ObjectView object={obj}></ObjectView></li>})
         return (
             <div className="app-row">
                 {/* <div className="editor-open-panel">
@@ -158,9 +186,9 @@ export default class EditorComponent extends MultiViewerComponent {
                 { this.state.showPanel &&
                     <div className="editor-side-col">
                         <Tabs onChange={this.selectTab.bind(this)} selectedTabId={this.state.selectedTabId} defaultSelectedTabId="nomenclature">
-                            <Tab id="graph" title="Graph"
-                                panel={<p>Hello</p>}>                            
-                            </Tab> 
+                            {/* <Tab id="graph" title="Graph"
+                                panel={<ul>{oViews}</ul>}>
+                            </Tab>  */}
                             <Tab id="nomenclature" title="Nomenclature" 
                                 panel={<NomenclatureView 
                                         nomenclature={this.state.currentNomenclature} 
@@ -169,12 +197,17 @@ export default class EditorComponent extends MultiViewerComponent {
                                     </NomenclatureView>
                                 }>
                             </Tab> 
-                            <Tab id="fold" title="Fold"
+                            <Tab id="helps" title="Helps" 
+                                panel={<HelpPanel />
+                                }>
+                            </Tab> 
+                            {/* <Tab id="fold" title="Fold"
                                 panel={<p>Hello</p>}>                            
-                            </Tab>     
+                            </Tab>      */}
                             <Tabs.Expander />
                             {/* <Button icon="cross" onClick={this.hidePanel.bind(this)}/> */}
                         </Tabs>
+                        
                     </div>
                 }
             </div>

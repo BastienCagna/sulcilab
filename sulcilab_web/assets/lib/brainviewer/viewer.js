@@ -219,9 +219,11 @@ export class Viewer {
     addMesh(vertices, triangles, metadata = null, color = 0xaaaaaa, selectable = true, transparent = true) {
         var offset = this.offset.toArray();
         var flat_vertices = [];
+        // BrainVISA files need to be flipped on the x axis
+        var flip = [-1, 1, 1];
         for (var v = 0; v < vertices.length; v++) {
             for (var i = 0; i < 3; i++) {
-                flat_vertices.push(vertices[v][i] - (offset[i]/3));
+                flat_vertices.push(flip[i] * (vertices[v][i] - (offset[i]/3)));
             }
         }
 

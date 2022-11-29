@@ -20,6 +20,7 @@ import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import '@blueprintjs/select/lib/css/blueprint-select.css';
 import './index.css';
+import AdminHome from './admin/home';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -34,6 +35,7 @@ root.render(
         <Route path="view" element={<View />} />
         <Route path="edit" element={<Edit />} />
         <Route path="signout" element={<SignOut />} />
+        <Route path="admin" element={<AdminHome />} />
       </Route>
     </Routes>
   </BrowserRouter>

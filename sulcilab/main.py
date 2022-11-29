@@ -18,6 +18,7 @@ app.include_router(api_router) #, prefix=config.API_V1_STR)
 origins = [
     "http://127.0.0.1:8000",
     "http://127.0.0.1:3000",
+    "http://bablab.fr:3000"
 ]
 
 app.add_middleware(

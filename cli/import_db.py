@@ -26,7 +26,7 @@ import argparse
 def import_graph(arg_file: str, db,
                  subject:Subject, acquisition:str, analysis:str, 
                  hemisphere:str, version:str, session:str,
-                 nomenclature:Nomenclature, author: User):
+                 nomenclature:Nomenclature, author: User, label_key='name'):
     _, nodes, _, _ = read_arg(arg_file)
 
     graph = crud.create(db, Graph,
@@ -44,11 +44,11 @@ def import_graph(arg_file: str, db,
     if len(tmp) == 0:
         raise RuntimeError("No unknown label")
     unknown_label = tmp[0]
-
+    
     missing_labels = set()
     for v in nodes:
-        if 'name' in v.keys():
-            lname, lhemi = split_label_name(v['name'])
+        if label_key in v.keys():
+            lname, lhemi = split_label_name(v[label_key])
             left = lhemi == "L" or lhemi == "X"
             right = lhemi == "R" or lhemi == "X"
             fold = crud.create(db, Fold, graph=graph, vertex=v['index'], mesh_index=v['Tmtktri_label'])
@@ -73,7 +73,7 @@ def import_graph(arg_file: str, db,
     return graph, labelset, missing_labels
 
 
-def import_db(path, name, fr_spe, acq, ana, version, graph_sess, nom_name, verbose=False):
+def import_db(path, name, fr_spe, acq, ana, version, graph_sess, nom_name, label_key='name', verbose=False):
     db = SessionLocal()
     species = crud.get_one_by(db, Species, fr_name=fr_spe)
 
@@ -86,11 +86,12 @@ def import_db(path, name, fr_spe, acq, ana, version, graph_sess, nom_name, verbo
         print('{} subjects'.format(len(subjects)))
 
     nomenclature = crud.get_one_by(db, Nomenclature, name=nom_name)#Nomenclature.objects.get(name=nom_name)
-    try:
+
+    database = crud.get_one_by(db, Database, name=name)
+    if not database:
         database = crud.create(db, Database, {'path':path, 'name':name})
         existing_subjects = []
-    except:
-        database = crud.get_one_by(db, Database, name=name)
+    else:
         if database.path != path:
             raise ValueError("{} already existing database do not match to path {}".format(database.name, path))
         existing_subjects = list(sub.name for sub in database.subjects)
@@ -131,7 +132,7 @@ def import_db(path, name, fr_spe, acq, ana, version, graph_sess, nom_name, verbo
 
             if graph_f:
                 # try:
-                _, _, miss_lbl = import_graph(graph_f, db, subject, graph_acq, graph_ana, h, graph_v, graph_sess, nomenclature, user)
+                _, _, miss_lbl = import_graph(graph_f, db, subject, graph_acq, graph_ana, h, graph_v, graph_sess, nomenclature, user, label_key)
                 missing_labels.union(miss_lbl)
                 r += 1
                 # except:
@@ -157,10 +158,11 @@ if __name__ == "__main__":
     parser.add_argument('spe', type=str, help='Species')
     parser.add_argument('--acq', dest="acq", type=str, default="default_acquisition", help='Acquisition name')
     parser.add_argument('--ana', dest="ana", type=str, default="default_analysis", help='Analysis name')
+    parser.add_argument('-k', dest="label_key", type=str, default="name", help='Label key: "name" or "label"')
     args = parser.parse_args()
 
     missing_labels, r = import_db(
-        args.path, args.name, args.spe, args.acq, args.ana, args.vers, args.sess, args.nom_name
+        args.path, args.name, args.spe, args.acq, args.ana, args.vers, args.sess, args.nom_name, args.label_key
     )
     for label in missing_labels:
         print('Missing label {} in {}. Labelings set to "unknown".'.format(label, args['nom_name']))
