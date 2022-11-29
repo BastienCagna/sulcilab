@@ -46,7 +46,10 @@ class Graph(Base, SulciLabBase):
     def get_mesh_path(self, type="white") -> str:
         v_path = op.join(self.subject.database.path, self.subject.center if self.subject.center else "*", self.subject.name, "t1mri", self.acquisition, self.analysis, "segmentation", "mesh")
         temp = op.join(v_path, f"{self.subject.name}_{self.hemisphere.value}{type}.gii")
-        return glob(temp)[0]
+        try: 
+            return glob(temp)[0]
+        except IndexError:
+            print("Could not find in ", temp)
 
     def get_path(self):
         v_path = op.join(self.subject.database.path, self.subject.center if self.subject.center else "*", self.subject.name, "t1mri", self.acquisition, self.analysis, "folds", self.version.value)
