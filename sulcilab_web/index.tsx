@@ -9,6 +9,7 @@ import App from './App';
 import Home from './public/home/home';
 import Learn from './public/learn/learn';
 import Contribute from './protected/contribute/contribute';
+import MyData from './protected/mydata/mydata';
 import View from './protected/view/view';
 import Edit from './protected/edit/edit';
 import SignIn from './public/signin/signin';
@@ -32,6 +33,7 @@ root.render(
         <Route path="" element={<Home />} />
         <Route path="learn" element={<Learn />} />
         <Route path="contribute" element={<Contribute />} />
+        <Route path="mydata" element={<MyData />} />
         <Route path="view" element={<View />} />
         <Route path="edit" element={<Edit />} />
         <Route path="signout" element={<SignOut />} />

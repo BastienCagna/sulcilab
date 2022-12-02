@@ -97,7 +97,7 @@ class PLabelingSetWithoutLabelings(PLabelingSetBase, SulciLabReadingModel):
     # author: 'PUserBase'
     graph: "PGraph"
     author: "PUserBase"
-    # nomenclature: "PNomenclature"
+    nomenclature: "PNomenclatureWithoutLabels"
 class PLabelingSet(PLabelingSetBase):
     labelings: List["PLabeling"] = []
     parent: Union[PLabelingSetBase, None] = None
@@ -109,12 +109,16 @@ class PLabelingSetShort(BaseModel):
     comment: Union[str, None] = ""
 
 from sulcilab.core.user import PUserBase, get_user_by_token
-from .nomenclature import Nomenclature, PNomenclature
+from .nomenclature import Nomenclature, PNomenclature, PNomenclatureWithoutLabels
 from .graph import Graph, PGraph
 from .labeling import Labeling, PLabeling, PLabelingBase
-from sulcilab.brainvisa.sharedlabelingset import SharedLabelingSet, PSharedLabelingSetWithoutLabelingSet
-PLabelingSet.update_forward_refs()
+from .sharedlabelingset import SharedLabelingSet, PSharedLabelingSetWithoutLabelingSet
+PLabelingSetBase.update_forward_refs()
+PLabelingSetCreate.update_forward_refs()
 PLabelingSetWithoutLabelings.update_forward_refs()
+PLabelingSet.update_forward_refs()
+PLabelingSetShort.update_forward_refs()
+# PSharedLabelingSetWithoutLabelingSet.update_forward_refs()
 
 # PLabelingSetWithoutLabelings.update_forward_refs()
 

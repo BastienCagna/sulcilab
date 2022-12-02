@@ -87,21 +87,21 @@ def import_db(path, name, fr_spe, acq, ana, version, graph_sess, nom_name, label
 
     nomenclature = crud.get_one_by(db, Nomenclature, name=nom_name)#Nomenclature.objects.get(name=nom_name)
 
-    database = crud.get_one_by(db, Database, name=name)
-    if not database:
-        database = crud.create(db, Database, {'path':path, 'name':name})
-        existing_subjects = []
-    else:
-        if database.path != path:
-            raise ValueError("{} already existing database do not match to path {}".format(database.name, path))
-        existing_subjects = list(sub.name for sub in database.subjects)
-
     users = crud.get_by(db, User, is_admin=True)
     if len(users):
         user = users[0]
     else:
         user = create_admin_user(db, PUserCreate(username="admin", password="admin", email=""))
     print("Using user: ", user.username)
+
+    database = crud.get_one_by(db, Database, name=name)
+    if not database:
+        database = crud.create(db, Database, path=path, name=name, owner_id=user.id, is_public=True)
+        existing_subjects = []
+    else:
+        if database.path != path:
+            raise ValueError("{} already existing database do not match to path {}".format(database.name, path))
+        existing_subjects = list(sub.name for sub in database.subjects)
 
     if verbose:
         print('Scanning the subjects...')

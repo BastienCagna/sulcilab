@@ -198,6 +198,7 @@ function LabelingSetItem(props: any) {
         { lset.parent_id && 
             <Tag aria-label={"Fork from #" + lset.parent_id}><Icon icon="git-new-branch" size={14}/> #{lset.parent_id}</Tag>
         }
+        <Tag>{lset.nomenclature.name}</Tag>
         <span>{lset.comment}</span>
         <div className="controls">
             {/* <Button icon="edit" intent="primary" onClick={() => { if(props.onEdit) props.onEdit(lset);} } disabled={!allowEdit}/> */}
