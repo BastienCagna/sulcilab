@@ -57,7 +57,6 @@ export default class ViewerComponent extends React.Component {
         LabelingSetsService.labelingSetsGetLabelingsetData(this.props.lset.id).then(
             (data: any)=> {
                 if(this.viewer) {
-                    console.log("received data", data)
                     this.setState({
                         currentNomenclature: data.nomenclature,
                         loadingMessage: 'Adding meshes...'

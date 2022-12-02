@@ -39,6 +39,9 @@ class PSharedLabelingSetBase(BaseModel):
     mode: int
 class PSharedLabelingSetCreate(PSharedLabelingSetBase):
     pass
+class PSharedLabelingSetWithoutLabelingSet(SulciLabReadingModel):
+    target: 'PUser'
+    mode: int
 class PSharedLabelingSet(PSharedLabelingSetBase, SulciLabReadingModel):
     pass
 
