@@ -1,3 +1,4 @@
+from matplotlib.collections import Collection
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum, Float
 from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
@@ -19,6 +20,9 @@ class Database(Base, SulciLabBase):
     description = Column(Text, nullable=True)
     path = Column(Text)
     subjects = relationship("Subject", back_populates="database")
+    owner = relationship("Subject", back_populates="database")
+    is_public = Collection(Boolean, default=False)
+    sharings = relationship("DatabaseSharing", back_populates="database")
 
 
 ##################
