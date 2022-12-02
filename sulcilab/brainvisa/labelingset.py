@@ -34,7 +34,7 @@ class LabelingSet(Base, SulciLabBase):
     nomenclature_id = Column(Integer, ForeignKey("nomenclatures.id"))
     nomenclature = relationship("Nomenclature", uselist=False)
     labelings = relationship("Labeling", back_populates="labelingset")
-    # sharings = relationship("SharedLabelingSet", back_populates="labelingset")
+    sharings = relationship("SharedLabelingSet", back_populates="labelingset")
 
     # TODO: reset update date each time that a labeling is updated
     
@@ -89,7 +89,7 @@ class PLabelingSetBase(BaseModel):
     graph_id: int
     nomenclature_id: int
     comment: Union[str, None] = ""
-    # sharings: Union["PSharedLabelingSetBase", None] = []
+    sharings: List["PSharedLabelingSetWithoutLabelingSet"] = []
 
 class PLabelingSetCreate(PLabelingSetBase):
     pass
@@ -112,7 +112,7 @@ from sulcilab.core.user import PUserBase, get_user_by_token
 from .nomenclature import Nomenclature, PNomenclature
 from .graph import Graph, PGraph
 from .labeling import Labeling, PLabeling, PLabelingBase
-from sulcilab.brainvisa.sharedlabelingset import SharedLabelingSet, PSharedLabelingSetBase
+from sulcilab.brainvisa.sharedlabelingset import SharedLabelingSet, PSharedLabelingSetWithoutLabelingSet
 PLabelingSet.update_forward_refs()
 PLabelingSetWithoutLabelings.update_forward_refs()
 
@@ -231,7 +231,8 @@ def new(graph_id: int, token: str = Depends(oauth2_scheme), db: Session = Depend
     lset = crud.create(db, LabelingSet,
         author_id=cuser.id, 
         graph_id=graph.id, 
-        nomenclature_id=nomenclature.id
+        nomenclature_id=nomenclature.id,
+        sharings=[]
     )
 
     # Create labelings

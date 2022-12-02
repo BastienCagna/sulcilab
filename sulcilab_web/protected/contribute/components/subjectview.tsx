@@ -1,12 +1,12 @@
-import { Button, Callout, Card, MenuItem, Overlay, PortalProvider, Tag } from "@blueprintjs/core";
+import { Button, Callout, Card, Icon, MenuItem, Overlay, PortalProvider, Tag } from "@blueprintjs/core";
 import { MultiSelect2, Select2 } from "@blueprintjs/select";
-import userEvent from "@testing-library/user-event";
 import React from "react";
 import { LabelingSetsService, PLabelingSet, PUser, SharedLabelingSetsService, UsersService } from "../../../api";
 import './subjectview.css';
+import { formatDate } from "../../../utils";
+
 
 const UserSelect = MultiSelect2.ofType<PUser>();
-
 
 
 function filterUser(query: string, user: PUser, _index:any, exactMatch:any) {
@@ -30,6 +30,7 @@ function filterUser(query: string, user: PUser, _index:any, exactMatch:any) {
     =====
     lset:
     disabled: bool
+    intent:
 */
 class SharingOverlay extends React.Component {
 
@@ -98,6 +99,13 @@ class SharingOverlay extends React.Component {
         nusers.splice(nusers.indexOf(user));
         this.setState({sharingUsers: users, notSharedUsers: nusers, hasChanged: this.hasChanged()})
     }
+    unselectUser(user: PUser) {   
+        const users = this.state.sharingUsers;
+        const nusers = this.state.notSharedUsers;
+        users.splice(users.indexOf(user));
+        nusers.push(user);
+        this.setState({sharingUsers: users, notSharedUsers: nusers, hasChanged: this.hasChanged()})
+    }
 
     hasChanged() {
         let all_found;
@@ -131,7 +139,7 @@ class SharingOverlay extends React.Component {
     render() {
         const lset = this.props.lset;
         return <div>
-            <Button icon="share" intent="primary" onClick={() => {this.toggleOverlay()}} disabled={this.props.disabled}/>
+            <Button icon="share" intent={this.props.intent ? this.props.intent : 'none'} onClick={() => {this.toggleOverlay()}} disabled={this.props.disabled}/>
             <Overlay isOpen={this.state.isOpen} onClose={() => {this.toggleOverlay()}}>
                 <Card interactive={true} className="sharing-overlay">
                     <h3>Sharing #{lset.id}</h3>
@@ -152,6 +160,7 @@ class SharingOverlay extends React.Component {
                             }
                             noResults={<MenuItem disabled={true} text="No results." />}
                             onItemSelect={this.selectUser.bind(this)}
+                            onRemove={this.unselectUser.bind(this)}
                             //query={this.state.selectedDatabase ? this.state.selectedDatabase.name : ""}
                             //onActiveItemChange={this.changeDatabase}
                         >
@@ -175,6 +184,36 @@ class SharingOverlay extends React.Component {
 }
 
 
+function LabelingSetItem(props: any) {
+    const lset = props.lset;
+    const allowEdit = props.user.is_admin || props.user.id == lset.author_id;
+    return <li key={lset.id}>
+        <Tag>#{lset.id}</Tag>
+        <Tag>{lset.author.username}</Tag>
+        { lset.updated_at && lset.updated_at != lset.created_a ?
+            <Tag><Icon icon="updated" size={12} /> {formatDate(lset.updated_at)}</Tag>
+        :
+            <Tag><Icon icon="add" size={12} /> {formatDate(lset.created_at)}</Tag>
+        }
+        { lset.parent_id && 
+            <Tag aria-label={"Fork from #" + lset.parent_id}><Icon icon="git-new-branch" size={14}/> #{lset.parent_id}</Tag>
+        }
+        <span>{lset.comment}</span>
+        <div className="controls">
+            {/* <Button icon="edit" intent="primary" onClick={() => { if(props.onEdit) props.onEdit(lset);} } disabled={!allowEdit}/> */}
+            {/* <Button icon="share" intent="primary" onClick={() => { if(props.onShare) props.onShare(lset);} }/> */}
+            <Button icon="duplicate" intent="primary" onClick={() => { if(props.onDuplicate) props.onDuplicate(lset);} }/>
+            <SharingOverlay lset={lset} disabled={!allowEdit} intent={lset.sharings.length > 0 ? 'success' : 'primary'}></SharingOverlay>
+            <Button icon="trash" intent="danger" onClick={() => { if(props.onDelete) props.onDelete(lset);} } disabled={!allowEdit}/>
+            <Button icon="eye-open" intent="success" onClick={() => { if(props.onPreview) props.onPreview(lset);} }/>
+            <Button icon="add-to-artifact" intent="success" onClick={() => { if(props.onSelect) props.onSelect(lset);} }/>
+            {/* <Button icon="duplicate" text="Duplicate" onClick={() => { if(props.onPreview) props.onDuplicate(lset);} }/>
+            <Button icon="eye-open" text="Preview" onClick={() => { if(props.onPreview) props.onPreview(lset);} }/>
+            <Button icon="add-to-artifact" text="Select" onClick={() => { if(props.onSelect) props.onSelect(lset);} }/> */}
+        </div>
+    </li>
+}
+
 /*
     Props
     =====
@@ -190,36 +229,16 @@ function LabelingSetListItem(props: any) {
     }
     else {
         rows = props.lsets.filter(lset => {return lset.graph.id == graph.id}).map(lset => {
-            const allowEdit = props.user.is_admin || props.user.id == lset.author_id;
             return (
-            <li key={lset.id}>
-                <Tag>#{lset.id}</Tag>
-                <Tag>{lset.author.username}</Tag>
-                { lset.updated_at && lset.updated_at != lset.created_a ?
-                    <Tag>Creation: {lset.created_at}</Tag>
-                  :
-                    <Tag>Last update: {lset.created_at}</Tag>
-                }
-                { lset.updated_at && 
-                    <Tag>Last update: {lset.updated_at}</Tag>
-                }
-                { lset.parent_id && 
-                    <Tag>Fork of: #{lset.parent_id}</Tag>
-                }
-                <span>{lset.comment}</span>
-                <div className="controls">
-                    <Button icon="edit" intent="primary" onClick={() => { if(props.onEdit) props.onEdit(lset);} } disabled={!allowEdit}/>
-                    {/* <Button icon="share" intent="primary" onClick={() => { if(props.onShare) props.onShare(lset);} }/> */}
-                    <SharingOverlay lset={lset} disabled={!allowEdit}></SharingOverlay>
-                    <Button icon="duplicate" intent="primary" onClick={() => { if(props.onDuplicate) props.onDuplicate(lset);} }/>
-                    <Button icon="trash" intent="danger" onClick={() => { if(props.onDelete) props.onDelete(lset);} } disabled={!allowEdit}/>
-                    <Button icon="eye-open" intent="success" onClick={() => { if(props.onPreview) props.onPreview(lset);} }/>
-                    <Button icon="add-to-artifact" intent="success" onClick={() => { if(props.onSelect) props.onSelect(lset);} }/>
-                    {/* <Button icon="duplicate" text="Duplicate" onClick={() => { if(props.onPreview) props.onDuplicate(lset);} }/>
-                    <Button icon="eye-open" text="Preview" onClick={() => { if(props.onPreview) props.onPreview(lset);} }/>
-                    <Button icon="add-to-artifact" text="Select" onClick={() => { if(props.onSelect) props.onSelect(lset);} }/> */}
-                </div>
-            </li>
+                <LabelingSetItem user={props.user} lset={lset}
+                    onPreview={props.onPreview} 
+                    onSelect={props.onSelect} 
+                    onCreateNew={props.onCreateNew}
+                    onEdit={props.onEdit} 
+                    onDuplicate={props.onDuplicate} 
+                    onShare={props.onShare} 
+                    onDelete={props.onDelete}
+                ></LabelingSetItem>
         )});
     }
 
@@ -232,7 +251,11 @@ function LabelingSetListItem(props: any) {
                 <h4>{graph.acquisition} / {graph.analysis} / {graph.version} / {graph.hemisphere}</h4>
             </div>
            <ul className="sview-lsetlist">
-                {rows}
+                { rows.length > 0 ?
+                    rows
+                :
+                    <p>No labeling for this graph. <a onClick={() => { if(props.onCreateNew) props.onCreateNew(graph);}}>Clic here</a> to create one.</p>
+                }
             </ul>
         </li> 
     )

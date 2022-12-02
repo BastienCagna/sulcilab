@@ -1,10 +1,14 @@
 import React from "react";
 import './editor.css';
 
-import { LabelingSetsService, PColor, PLabel, PLabeling,} from '../api';
+import { LabelingSetsService, PColor, PLabel, PLabeling, PLabelingSet,} from '../api';
 import { Button, Icon, Slider, Spinner, Tab, TabId, Tabs } from "@blueprintjs/core";
 import MultiViewerComponent from "./multiviewer";
 import { checkBackgrounColor, strColor, threeJsColor } from './viewer_utils'
+import { Select2 } from "@blueprintjs/select";
+
+
+const LSetSelect = Select2.ofType<PLabelingSet>();
 
 
 class LabelView extends React.Component {
@@ -22,7 +26,7 @@ class LabelView extends React.Component {
     }
 }
 
-function HelpPanel(props) {
+function HelpPanel(props: any) {
     return (<div className="editor-help-panel">
             <h4>Controls</h4>
             <ul>
@@ -32,6 +36,27 @@ function HelpPanel(props) {
                 <li>"k": clear selection</li>
             </ul>
         </div>)
+}
+
+class InfosPanel extends React.Component {
+    constructor(props: any) {
+        super(props);
+
+        this.state = {
+            // lsets: props.lsets ? props.lsets : []
+            lset: null
+        }
+    }
+
+    render() {
+        return <div className="editor-help-panel">
+            <h4>Infos</h4>
+            <LSetSelect 
+                items={this.props.lsets}
+                
+            ></LSetSelect>
+        </div>
+    }
 }
 
 class LabelDetailedView extends React.Component {
