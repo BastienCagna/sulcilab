@@ -28,7 +28,7 @@ setuptools.setup(
 
     packages=['sulcilab', 'sulcilab_gui'],
     setup_requires=['Cython'],
-    install_requires=['fastapi', 'sqlalchemy', 'numpy', 'pandas', 'nibabel', 'matplotlib', 'PyJWT', 'python-decouple', 'tqdm', 'pyqt5'],
+    install_requires=['fastapi', 'uvicorn', 'sqlalchemy', 'numpy', 'pandas', 'nibabel', 'matplotlib', 'PyJWT', 'python-decouple', 'tqdm'],
     extras_require={
         'dev': [
             'pytest'

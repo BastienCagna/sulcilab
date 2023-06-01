@@ -1,0 +1,12 @@
+version: '3.4'
+services:
+  web:
+    restart: always
+    build: .
+    image: samples/fastapi-react-app
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
+    env_file: ./.env
+    command: gunicorn --bind 0.0.0.0:8000 -w 4 -k uvicorn.workers.UvicornWorker main:app

@@ -1,0 +1,209 @@
+# tree 1.0
+
+*BEGIN TREE hierarchy
+graph_syntax CorticalFoldArg
+
+*BEGIN TREE fold_name
+name  unknown
+color 255 180 180
+
+*END
+
+*BEGIN TREE fold_name
+name brain
+
+*BEGIN TREE fold_name
+name hemisph_left
+
+*BEGIN TREE fold_name
+name  IPD._left
+color 255 0 255
+
+*END
+
+*BEGIN TREE fold_name
+name  AscS._left
+color 255 0 255
+
+*END
+
+*BEGIN TREE fold_name
+name  CaS._left
+color 200 150 100
+
+*END
+
+*BEGIN TREE fold_name
+name  CgS-p._left
+color 255 224 0
+
+*END
+
+*BEGIN TREE fold_name
+name  CgS._left
+color 0 0 255
+
+*END
+
+*BEGIN TREE fold_name
+name  pCgS-d._left
+color 204 0 153
+
+*END
+
+*BEGIN TREE fold_name
+name  ECS._left
+color 0 0 100
+
+*END
+
+*BEGIN TREE fold_name
+name  IArS._left
+color 160 255 0
+
+*END
+
+*BEGIN TREE fold_name
+name  IOS._left
+color 100 0 255
+
+*END
+
+*BEGIN TREE fold_name
+name  IPS-d._left
+color 0 255 0
+
+*END
+
+*BEGIN TREE fold_name
+name  IPS-v._left
+color 200 255 0
+
+*END
+
+*BEGIN TREE fold_name
+name  ITS._left
+color 255 0 255
+
+*END
+
+*BEGIN TREE fold_name
+name  LS._left
+color 255 189 35
+
+*END
+
+*BEGIN TREE fold_name
+name  LuS._left
+color 255 255 0
+
+*END
+
+*BEGIN TREE fold_name
+name  MOS-l._left
+color 255 255 0
+label 20
+
+*END
+
+*BEGIN TREE fold_name
+name  MOS-m._left
+color 255 0 0
+
+*END
+
+*BEGIN TREE fold_name
+name  OTS-a._left
+color 100 255 100
+
+*END
+
+*BEGIN TREE fold_name
+name  OTS-p._left
+color 255 155 0
+
+*END
+
+*BEGIN TREE fold_name
+name  PS._left
+color 0 200 255
+
+*END
+
+*BEGIN TREE fold_name
+name  PSPD._left
+color 255 0 255
+
+*END
+
+*BEGIN TREE fold_name
+name  PmTS._left
+color 0 255 204
+
+*END
+
+*BEGIN TREE fold_name
+name  PoCS._left
+color 255 0 255
+
+*END
+
+*BEGIN TREE fold_name
+name  PrCS._left
+color 153 204 255
+
+*END
+
+*BEGIN TREE fold_name
+name  PrOS._left
+color 0 0 255
+
+*END
+
+*BEGIN TREE fold_name
+name  SArS._left
+color 255 255 90
+
+*END
+
+*BEGIN TREE fold_name
+name  STS._left
+color 255 100 100
+
+*END
+
+*BEGIN TREE fold_name
+name  mPrOS._left
+color 0 133 255
+
+*END
+
+*BEGIN TREE fold_name
+name  S.C._left
+color 255 0 0
+
+*END
+
+*BEGIN TREE fold_name
+name  SCaS._left
+color 0 255 255
+
+*END
+
+*BEGIN TREE fold_name
+name  ICaS._left
+color 255 153 0
+
+*END
+
+*BEGIN TREE fold_name
+name  unknown._left
+color 255 180 180
+
+*END
+
+*END
+
+*END
+
+*END
