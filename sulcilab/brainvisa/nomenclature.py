@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session, relationship
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from pydantic import BaseModel
+from sulcilab.core.schemas import SulciLabReadingModel
 from sulcilab.database import SulciLabBase, Base
 from sulcilab.core import crud
 from sulcilab.database import SessionLocal, get_db
@@ -34,8 +35,13 @@ class PNomenclature(BaseModel):
     default: bool
     labels: List['PLabel']
 
+class PNomenclatureWithoutLabels(SulciLabReadingModel):
+    name: str
+    default: bool
+
 from .label import PLabel
 PNomenclature.update_forward_refs()
+PNomenclatureWithoutLabels.update_forward_refs()
 ###################
 # CRUD Operations #
 ###################

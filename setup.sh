@@ -1,29 +1,29 @@
 #!/bin/bash
 
-if which node > /dev/null
-then
-    echo "node is installed, skipping..."
-else
-    # add deb.nodesource repo commands 
-    # install node
-    echo "install node"
-    ./install_node.sh
-fi
+# if which node > /dev/null
+# then
+#     echo "node is installed, skipping..."
+# else
+#     # add deb.nodesource repo commands 
+#     # install node
+#     echo "install node"
+#     ./install_node.sh
+# fi
 
-# python -m venv venv
-# . venv/bin/activate
+# # python -m venv venv
+# # . venv/bin/activate
 
-if test -f ".env"; then
-    echo ".env file already exist."
-else
-    cp '.env.dist' '.env'
-fi
+# if test -f ".env"; then
+#     echo ".env file already exist."
+# else
+#     cp '.env.dist' '.env'
+# fi
 
-python setup.py develop --user
-npm install
+# python setup.py develop --user
+# npm install
 
-# BUILD the FastAPI javascript client
-npm run api-build
+# # BUILD the FastAPI javascript client
+# npm run api-build
 
 
 mv db.sqlite db.sqlite.back

@@ -1,0 +1,87 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Setup nomenclatures",
+            "type": "python",
+            "request": "launch",
+            "program": "cli/install_nomenclatures.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "./data/labels.csv", "./data/sulcal_root_colors.hie"
+            ]
+        },
+        {
+            "name": "Import Archi",
+            "type": "python",
+            "request": "launch",
+            "program": "cli/import_db.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "/neurospin/dico/data/bv_databases/human/manually_labeled/archi", "Archi", "archi", "3.3", "session1_manual", "Human"
+            ]
+        },
+        {
+            "name": "Import PClean",
+            "type": "python",
+            "request": "launch",
+            "program": "cli/import_db.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "/neurospin/dico/data/bv_databases/human/manually_labeled/pclean", "PClean", "BrainVISA_2019", "3.3", "base2018_manual", "Human"
+            ]
+        },
+        {
+            "name": "Import Chimps",
+            "type": "python",
+            "request": "launch",
+            "program": "cli/import_db.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "/neurospin/dico/data/bv_databases/chimps/3T_New", "Chimps 3T", "BrainVISA_2019", "3.1", "2020_shape_analysis_manual", "Chimpanzee"
+            ]
+        },
+        {
+            "name": "Import Macaques",
+            "type": "python",
+            "request": "launch",
+            "program": "cli/import_db.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "/neurospin/dico/data/bv_databases/macaque/marsMacaques", "Macaques 2", "MarsMacaque", "3.1", "default_session_KK", "Macaque"
+            ]
+        },
+        {
+            "name": "Sulcilab GUI",
+            "type": "python",
+            "request": "launch",
+            "program": "sulcilab_gui/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "API Backend",
+            "type": "python",
+            "request": "launch",
+            "program": "sulcilab/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ]
+}

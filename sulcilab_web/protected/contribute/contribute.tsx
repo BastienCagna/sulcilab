@@ -2,7 +2,7 @@ import React, { RefObject } from "react";
 import './contribute.css';
 
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Callout, ControlGroup, InputGroup, MenuItem, Overlay, Spinner } from "@blueprintjs/core"
+import { Button, Callout, ControlGroup, InputGroup, MenuItem, Overlay, Spinner, Tag } from "@blueprintjs/core"
 import { Select2, ICreateNewItem, ItemPredicate } from "@blueprintjs/select";
 
 import { DatabasesService, LabelingSetsService, PDatabase, PGraph, PLabelingSet, PLabelingSetWithoutLabelings, PSubject } from "../../api";
@@ -65,7 +65,7 @@ class Contribute extends ProtectedComponent {
 
     async loadDatabases() {
         this.setState({isLoadingDatabases: true});
-        const databases = await DatabasesService.databasesRead();
+        const databases = await DatabasesService.databasesIndex();
         this.setState({databases: databases});
         if(!this.selectedDatabase && databases.length > 0) {
             this.changeDatabase(databases[0], false);
@@ -211,10 +211,6 @@ class Contribute extends ProtectedComponent {
             </header>
 
             <div className="app-row page">
-                <Overlay>
-                    <h1>Sharing</h1>
-                    
-                </Overlay>
                 <section className="app-col-large">
                     <div>
                         <form className="sl-box labelingset-search-bar">
@@ -222,7 +218,7 @@ class Contribute extends ProtectedComponent {
                                 <DatabaseSelect
                                     items={this.state.databases}
                                     itemPredicate={filterDatabase}
-                                    itemRenderer={(item: PDatabase, {handleClick, handleFocus}) => {return (<MenuItem key={item.id} text={item.name} onClick={handleClick} onFocus={handleFocus} />)} }
+                                    itemRenderer={(item: PDatabase, {handleClick, handleFocus}) => {return (<MenuItem key={item.id} text={item.name + '   ' + (item.owner.id == this.user.id ? "(yours)" : '')} onClick={handleClick} onFocus={handleFocus}></MenuItem>)} }
                                     noResults={<MenuItem disabled={true} text="No results." />}
                                     onItemSelect={this.changeDatabase.bind(this)}
                                     //query={this.state.selectedDatabase ? this.state.selectedDatabase.name : ""}
@@ -250,6 +246,7 @@ class Contribute extends ProtectedComponent {
 
                             {/* <Button text="Auto selection" intent="warning" onClick={this.autoselect.bind(this)}/> */}
                             <p style={{textAlign: "right"}}>{nSubs > 1 ? nSubs + ' subjects' : (nSubs === 1 ? '1 subject' : 'No subjects')} </p>
+                            <Button text="My data..." onClick={() => {window.location = '/mydata'} } />
                         </form>                    
                         { this.state.isLoadingDatabases && <Spinner></Spinner> }
                     </div>

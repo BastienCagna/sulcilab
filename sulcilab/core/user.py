@@ -34,13 +34,13 @@ class User(Base, SulciLabBase):
 ###################
 # Pydantic Models #
 ###################
-class PSulciLabReadingModel(BaseModel):
-    id: int
-    # create_at: datetime
-    # updated_at: datetime | None = None
+# class PSulciLabReadingModel(BaseModel):
+#     id: int
+#     # create_at: datetime
+#     # updated_at: datetime | None = None
 
-    class Config:
-        orm_mode = True
+#     class Config:
+#         orm_mode = True
 
 
 class PUserBase(BaseModel):

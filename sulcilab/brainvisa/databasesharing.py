@@ -31,13 +31,19 @@ class PDatabaseSharingCreate(PDatabaseSharingBase):
     pass
 class PDatabaseSharing(PDatabaseSharingBase, SulciLabReadingModel):
     pass
+class PDatabaseSharingWithoutDatabase(SulciLabReadingModel):
+    target: 'PUser'
+    mode: int
 
 from sulcilab.core.user import PUser
 from .database import PDatabase
+PDatabaseSharingBase.update_forward_refs()
+PDatabaseSharingCreate.update_forward_refs()
 PDatabaseSharing.update_forward_refs()
+PDatabaseSharingWithoutDatabase.update_forward_refs()
 
 ###################
 # CRUD Operations #
-###################
+##################
 
 

@@ -47,6 +47,9 @@ class PSharedLabelingSet(PSharedLabelingSetBase, SulciLabReadingModel):
 
 from sulcilab.core.user import PUser
 from .labelingset import LabelingSet, PLabelingSet
+PSharedLabelingSetBase.update_forward_refs()
+PSharedLabelingSetCreate.update_forward_refs()
+PSharedLabelingSetWithoutLabelingSet.update_forward_refs()
 PSharedLabelingSet.update_forward_refs()
 ###################
 # CRUD Operations #
